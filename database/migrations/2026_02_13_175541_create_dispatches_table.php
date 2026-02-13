@@ -13,12 +13,13 @@ return new class extends Migration
     {
         Schema::create('dispatches', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('occurrence_id')->unique();
+            $table->uuid('occurrence_id')->index();
             $table->unsignedTinyInteger('status')
                 ->default(0)
                 ->index();
-            $table->string('resource_code', 50)->index();
+            $table->string('resource_code', 50);
             $table->timestamps();
+
             $table->foreign('occurrence_id')
                 ->references('id')
                 ->on('occurrences');

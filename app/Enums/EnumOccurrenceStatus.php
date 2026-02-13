@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum EnumStatusOccurrence: int implements EnumInterface
+enum EnumOccurrenceStatus: int implements EnumInterface
 {
     case REPORTED = 0;
     case IN_PROGRESS = 1;

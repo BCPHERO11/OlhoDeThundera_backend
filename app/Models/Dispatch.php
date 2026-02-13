@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Enums\EnumStatusDispatch;
+use App\Enums\EnumDispatchStatus;
 use Illuminate\Database\Eloquent\Model;
 
 class Dispatch extends Model
@@ -17,7 +17,7 @@ class Dispatch extends Model
     ];
 
     protected $casts = [
-        'status' => EnumStatusDispatch::class,
+        'status' => EnumDispatchStatus::class,
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -25,5 +25,9 @@ class Dispatch extends Model
     public function occurrence()
     {
         return $this->belongsTo(Occurrence::class, 'occurrence_id', 'id');
+    }
+    public function logs()
+    {
+        return $this->morphMany(AuditLog::class, 'entity');
     }
 }
