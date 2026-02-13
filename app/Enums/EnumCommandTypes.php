@@ -17,13 +17,13 @@ enum EnumCommandTypes: int implements EnumInterface
     {
         return match ($this) {
             self::OCCURRENCE_CREATED => 'occurrence.created',
-            self::OCCURRENCE_IN_PROGRESS => 'occurrence.progress',
+            self::OCCURRENCE_IN_PROGRESS => 'occurrence.in_progress',
             self::OCCURRENCE_RESOLVED => 'occurrence.resolved',
             self::OCCURRENCE_CANCELLED => 'occurrence.cancelled',
             self::DISPATCH_ASSIGNED => 'dispatch.assigned',
-            self::DISPATCH_EN_ROUTE => 'dispatch.en.route',
-            self::DISPATCH_ON_SITE => 'dispatch.on.site',
+            self::DISPATCH_EN_ROUTE => 'dispatch.en_route',
+            self::DISPATCH_ON_SITE => 'dispatch.on_site',
             self::DISPATCH_CLOSED => 'dispatch.closed',
-       };
+        };
     }
 }

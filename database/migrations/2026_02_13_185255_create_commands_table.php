@@ -17,6 +17,7 @@ return new class extends Migration
             $table->unsignedTinyInteger('status')->default(0)->index();
             $table->dateTime('processed_at')->nullable()->index();
             $table->string('error', 500)->nullable();
+            $table->dateTime('created_at')->useCurrent()->index();
         });
     }
 
