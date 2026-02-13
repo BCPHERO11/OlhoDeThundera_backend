@@ -11,16 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('occurrences', function (Blueprint $table) {
+        Schema::create('dispatches', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('external_id')->unique()->nullable($value = false);
-            $table->string('type', 100)->index();
+            $table->uuid('occurrence_id')->unique();
             $table->unsignedTinyInteger('status')
                 ->default(0)
                 ->index();
-            $table->string('description');
-            $table->dateTime('reported_at')->index();
+            $table->string('resource_code', 50)->index();
             $table->timestamps();
+            $table->foreign('occurrence_id')
+                ->references('id')
+                ->on('occurrences');
         });
     }
 
@@ -29,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('occurrences');
+        Schema::dropIfExists('dispatches');
     }
 };

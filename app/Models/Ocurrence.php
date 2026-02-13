@@ -4,12 +4,9 @@ namespace App\Models;
 
 use App\Enums\EnumStatusOccurrence;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Support\Str;
 
 class Occurrence extends Model
 {
-    use HasFactory;
     protected $table = 'occurrences';
     protected $keyType = 'string';
     public $incrementing = false;
@@ -26,4 +23,9 @@ class Occurrence extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    public function dispatches()
+    {
+        return $this->hasMany(Dispatch::class, 'occurrence_id', 'id');
+    }
 }

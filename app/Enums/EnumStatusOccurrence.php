@@ -2,7 +2,6 @@
 
 namespace App\Enums;
 
-use App\Enums\EnumInterface;
 enum EnumStatusOccurrence: int implements EnumInterface
 {
     case REPORTED = 0;
@@ -13,10 +12,10 @@ enum EnumStatusOccurrence: int implements EnumInterface
     public function name(): string
     {
         return match ($this){
-            self::REPORTED => 'REPORTED',
-            self::IN_PROGRESS => 'IN_PROGRESS',
-            self::RESOLVED => 'RESOLVED',
-            self::CANCELLED => 'CANCELLED',
+            self::REPORTED => 'reported',
+            self::IN_PROGRESS => 'in_progress',
+            self::RESOLVED => 'resolved',
+            self::CANCELLED => 'cancelled',
         };
     }
 }

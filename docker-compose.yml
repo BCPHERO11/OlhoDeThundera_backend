@@ -21,9 +21,9 @@ services:
     image: postgres:14.4
     container_name: postgres_delfos
     environment:
-      POSTGRES_DB: laravel
-      POSTGRES_USER: laravel_user
-      POSTGRES_PASSWORD: laravel_pass
+      POSTGRES_DB: delfos
+      POSTGRES_USER: delfos_user
+      POSTGRES_PASSWORD: delfos_pass
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
