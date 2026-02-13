@@ -10,6 +10,7 @@ class Occurrence extends Model
     protected $table = 'occurrences';
     protected $keyType = 'string';
     public $incrementing = false;
+
     protected $fillable = [
         'external_id',
         'type',
@@ -17,6 +18,7 @@ class Occurrence extends Model
         'description',
         'reported_at',
     ];
+
     protected $casts = [
         'status' => EnumOccurrenceStatus::class,
         'reported_at' => 'datetime',

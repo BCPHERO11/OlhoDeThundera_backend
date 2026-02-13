@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
 class AuditLog extends Model
@@ -31,23 +31,16 @@ class AuditLog extends Model
         'created_at' => 'datetime',
     ];
 
-    /*
-    |--------------------------------------------------------------------------
-    | Polymorphic relation
-    |--------------------------------------------------------------------------
-    */
-
     public function entity()
     {
         return $this->morphTo();
     }
 
-    public static function boot(): void
+    protected static function booted(): void
     {
         Relation::morphMap([
-            'dispatch' => \App\Models\Dispatch::class,
-            'occurrence' => \App\Models\Occurrence::class,
+            'dispatch' => Dispatch::class,
+            'occurrence' => Occurrence::class,
         ]);
     }
-
 }
