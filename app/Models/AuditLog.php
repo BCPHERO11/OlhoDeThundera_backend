@@ -8,8 +8,6 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 
 class AuditLog extends Model
 {
-    use HasFactory;
-
     protected $table = 'logs';
 
     public $timestamps = false;
