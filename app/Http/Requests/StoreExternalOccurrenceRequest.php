@@ -24,7 +24,7 @@ class StoreExternalOccurrenceRequest extends FormRequest
             "externalId"  => "required|string|unique:occurrences,external_id",
             "description" => "required|string",
             "type"        => "required|string",
-            "reportedAt" => "required|date",
+            "reportedAt"  => "required|date",
         ];
     }
 
@@ -34,8 +34,9 @@ class StoreExternalOccurrenceRequest extends FormRequest
     public function messages(): array
     {
         return [
-            "externalId.required" => "O título da ocorrência é obrigatório.",
-            "externalId.unique"   => "O processo informado já foi registrado"
+            "externalId.required" => "O identificador externo da ocorrência é obrigatório.",
+            "externalId.unique"   => "A ocorrência informada já foi registrada.",
+            "reportedAt.required" => "A data/hora de reporte da ocorrência é obrigatória.",
         ];
     }
 
@@ -46,8 +47,8 @@ class StoreExternalOccurrenceRequest extends FormRequest
     {
         // você pode sanitizar/normalizar dados aqui
         $this->merge([
-            "occurred_at" => $this->input("occurred_at")
-                ? date("Y-m-d H:i:s", strtotime($this->input("occurred_at")))
+            "reportedAt" => $this->input("reportedAt")
+                ? date("Y-m-d H:i:s", strtotime($this->input("reportedAt")))
                 : null,
         ]);
     }
