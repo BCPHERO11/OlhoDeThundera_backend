@@ -1,22 +1,6 @@
 version: '3.9'
 
 services:
-  app:
-    build:
-      context:  docker
-      dockerfile: dockerfile
-    container_name: API_olho_de_delfos
-    user: "1000:1000" #Garante que os arquivos serão criados como root
-    ports:
-      - "8070:80"     #HTTP Lembrando que a esquerda é a da máquina e a doreita é a do conteiner
-      - "4213:443"    #HTTPS
-    volumes:
-      - ./:/app       #Monta a raiz do projeto no container
-    environment:
-      WEB_DOCUMENT_ROOT: /app/public
-      PHP_MEMORY_LIMIT: 512M
-      PHP_MAX_EXECUTION_TIME: 300
-
   db:
     image: postgres:14.4
     container_name: postgres_delfos
@@ -31,9 +15,45 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: delfos_redis
+    container_name: redis
     ports:
-      - "6360:6379"
+      - "6379:6379" # opcional (só se quiser acessar do host)
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build:
+      context: ./docker
+      dockerfile: dockerfile
+    container_name: API_olho_de_delfos
+    user: "1000:1000" #Garante que os arquivos serão criados como root
+    ports:
+      - "8070:80"     #HTTP Lembrando que a esquerda é a da máquina e a doreita é a do conteiner
+      - "4213:443"    #HTTPS
+    volumes:
+      - ./:/app       #Monta a raiz do projeto no container
+    environment:
+      WEB_DOCUMENT_ROOT: /app/public
+      PHP_MEMORY_LIMIT: 512M
+      PHP_MAX_EXECUTION_TIME: 300
+      QUEUE_CONNECTION: redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+  worker:
+    build: .
+    container_name: laravel_worker
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      QUEUE_CONNECTION: redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    command: ["php", "artisan", "queue:work", "redis", "--sleep=1", "--tries=3", "--backoff=5", "--timeout=90"]
 
 volumes:
   pgdata:
