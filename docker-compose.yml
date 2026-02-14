@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   db:
     image: postgres:14.4
@@ -26,8 +24,8 @@ services:
 
   app:
     build:
-      context: ./docker
-      dockerfile: dockerfile
+      context: .
+      dockerfile: docker/Dockerfile
     container_name: API_olho_de_delfos
     user: "1000:1000" #Garante que os arquivos serão criados como root
     ports:
@@ -35,21 +33,13 @@ services:
       - "4213:443"    #HTTPS
     volumes:
       - ./:/app       #Monta a raiz do projeto no container
-    environment:
-      WEB_DOCUMENT_ROOT: /app/public
-      PHP_MEMORY_LIMIT: 512M
-      PHP_MAX_EXECUTION_TIME: 300
-      QUEUE_CONNECTION: redis
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-
-  worker:
-    build: .
-    container_name: laravel_worker
     depends_on:
       redis:
         condition: service_healthy
     environment:
+      WEB_DOCUMENT_ROOT: /app/public
+      PHP_MEMORY_LIMIT: 512M
+      PHP_MAX_EXECUTION_TIME: 300
       QUEUE_CONNECTION: redis
       REDIS_HOST: redis
       REDIS_PORT: 6379
