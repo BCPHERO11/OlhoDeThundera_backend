@@ -15,12 +15,7 @@ services:
     image: redis:7-alpine
     container_name: redis
     ports:
-      - "6379:6379" # opcional (só se quiser acessar do host)
-    healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
-      interval: 5s
-      timeout: 3s
-      retries: 10
+      - "6379:6379"
 
   app:
     build:
@@ -33,17 +28,27 @@ services:
       - "4213:443"    #HTTPS
     volumes:
       - ./:/app       #Monta a raiz do projeto no container
-    depends_on:
-      redis:
-        condition: service_healthy
     environment:
       WEB_DOCUMENT_ROOT: /app/public
       PHP_MEMORY_LIMIT: 512M
       PHP_MAX_EXECUTION_TIME: 300
-      QUEUE_CONNECTION: redis
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-    command: ["php", "artisan", "queue:work", "redis", "--sleep=1", "--tries=3", "--backoff=5", "--timeout=90"]
+
+  worker:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    command: ["php", "artisan", "queue:work", "--tries=3", "--sleep=3", "--verbose"]
+    volumes:
+      - ./:/app
+    depends_on:
+      - app
+      - redis
+    environment:
+      - QUEUE_CONNECTION=redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CACHE_DRIVER=redis
+      - CACHE_STORE=redis
 
 volumes:
   pgdata:
