@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use LogicException;
 
 class AuditLog extends Model
 {
@@ -40,5 +40,15 @@ class AuditLog extends Model
             'dispatch' => Dispatch::class,
             'occurrence' => Occurrence::class,
         ]);
+
+        static::updating(function (self $auditLog): void {
+            if ($auditLog->isDirty('id')) {
+                throw new LogicException('AuditLog.id é imutável.');
+            }
+
+            if ($auditLog->isDirty('entity_type') || $auditLog->isDirty('entity_id')) {
+                throw new LogicException('AuditLog.entity_type e entity_id são imutáveis.');
+            }
+        });
     }
 }

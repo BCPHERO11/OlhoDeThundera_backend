@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\EnumOccurrenceStatus;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
+use LogicException;
 
 class Occurrence extends Model
 {
@@ -25,6 +27,23 @@ class Occurrence extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $occurrence): void {
+            $occurrence->id ??= (string) Str::uuid();
+        });
+
+        static::updating(function (self $occurrence): void {
+            if ($occurrence->isDirty('id')) {
+                throw new LogicException('Occurrence.id é imutável.');
+            }
+
+            if ($occurrence->isDirty('external_id')) {
+                throw new LogicException('Occurrence.external_id é imutável.');
+            }
+        });
+    }
 
     public function dispatches()
     {

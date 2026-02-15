@@ -2,14 +2,11 @@
 namespace App\Repositories;
 
 use App\Models\Dispatch;
-use Illuminate\Support\Str;
 
 class DispatchRepository
 {
     public function create(array $data): Dispatch
     {
-        $data['id'] ??= (string) Str::uuid();
-
         return Dispatch::create($data);
     }
 

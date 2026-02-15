@@ -32,11 +32,11 @@ services:
       WEB_DOCUMENT_ROOT: /app/public
       PHP_MEMORY_LIMIT: 512M
       PHP_MAX_EXECUTION_TIME: 300
-        - QUEUE_CONNECTION=redis
-        - REDIS_HOST=redis
-        - REDIS_PORT=6379
-        - CACHE_DRIVER=redis
-        - CACHE_STORE=redis
+      QUEUE_CONNECTION: redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CACHE_DRIVER: redis
+      CACHE_STORE: redis
 
 volumes:
   pgdata:
