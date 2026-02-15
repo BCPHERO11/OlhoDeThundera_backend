@@ -1,8 +1,7 @@
 <?php
 
-use App\Jobs\ProcessApiPost;
-use Illuminate\Http\Request;
 use App\Http\Controllers\ExternalOccurrenceController;
+use App\Http\Controllers\InternalOccurrenceController;
 
 Route::middleware(['api.key', 'api.indempotency'])->group(function () {
     Route::prefix('integrations')->group(function () {
@@ -15,4 +14,3 @@ Route::middleware(['api.key', 'api.indempotency'])->group(function () {
         Route::post('dispatch', [InternalOccurrenceController::class, 'dispatch']);
     });
 });
-
