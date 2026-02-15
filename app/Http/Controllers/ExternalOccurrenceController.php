@@ -14,24 +14,26 @@ class ExternalOccurrenceController extends Controller
 {
     public function store(StoreExternalOccurrenceRequest $request): JsonResponse
     {
-        // dados validados
         $validated = $request->validated();
 
-        $commandPayload = array(
+        $commandPayload = [
             'id' => (string) Str::uuid(),
-            'indempotency_key' => $request->header('Idempotency-Key'),
+            'idempotency_key' => null,
             'source' => 'sistema_externo',
             'type' => EnumCommandTypes::OCCURRENCE_CREATED,
             'payload' => $validated,
             'status' => EnumCommandStatus::PENDING,
             'processed_at' => null,
-            'error' => null
-        );
+            'error' => null,
+        ];
 
-        $key = $commandPayload['indempotency_key'] . $commandPayload['type']->name() . $validated['externalId'];
+        $key = $request->header('Idempotency-Key')
+            . $commandPayload['type']->name()
+            . $validated['externalId'];
 
-        // Regra que vai garantir a indepotência do Redis na Fila impidindo repetião por 1 minuto
-        $result = Redis::set($key, now()->toDateTimeString(),'NX', 'EX', 60 * 60);
+        $commandPayload['idempotency_key'] = $key;
+
+        $result = Redis::set($key, now()->toDateTimeString(), 'NX', 'EX', 60 * 60);
 
         if (!$result) {
             return response()->json([
@@ -39,11 +41,10 @@ class ExternalOccurrenceController extends Controller
             ], 409);
         }
 
-        // enviar para fila
         ProcessApiPost::dispatch($commandPayload);
 
         return response()->json([
-            "message" => "Ocorrência recebida e colocada na fila"
+            'message' => 'Ocorrência recebida e colocada na fila'
         ], 202);
     }
 }

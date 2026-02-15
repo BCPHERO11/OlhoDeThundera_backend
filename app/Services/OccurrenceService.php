@@ -15,19 +15,25 @@ class OccurrenceService
 
     public function create(array $payload)
     {
-        $payload['status'] = EnumOccurrenceStatus::REPORTED;
+        $occurrenceData = [
+            'external_id' => $payload['externalId'],
+            'type' => $payload['type'],
+            'description' => $payload['description'],
+            'reported_at' => $payload['reportedAt'],
+            'status' => EnumOccurrenceStatus::REPORTED,
+        ];
 
-        return $this->repository->create($payload);
+        return $this->repository->create($occurrenceData);
     }
 
-    public function changeStatus(
-        string $externalId,
+    public function changeStatusById(
+        string $occurrenceId,
         EnumOccurrenceStatus $newStatus
     ) {
-        return DB::transaction(function () use ($externalId, $newStatus) {
+        return DB::transaction(function () use ($occurrenceId, $newStatus) {
 
             $occurrence = $this->repository
-                ->findByExternalIdForUpdate($externalId);
+                ->findByIdForUpdate($occurrenceId);
 
             if (!$occurrence) {
                 throw new \DomainException("Occurrence não encontrada");
