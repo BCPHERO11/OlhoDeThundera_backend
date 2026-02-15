@@ -28,38 +28,36 @@ class ProcessApiPost implements ShouldQueue
         CommandHandler $handler,
         CommandRepository $commandRepository
     ): void {
+        $idempotencyKey = $this->payload['idempotency_key'] ?? null;
 
-        $commandId = $this->payload['command_id'] ?? null;
-
-        if (!$commandId) {
-            throw new \InvalidArgumentException('command_id ausente no payload');
+        if (!$idempotencyKey) {
+            throw new \InvalidArgumentException('idempotency_key ausente no payload');
         }
 
+        $command = null;
+
         try {
-
             DB::transaction(function () use (
-                $commandId,
+                $idempotencyKey,
                 $handler,
-                $commandRepository
+                $commandRepository,
+                &$command
             ) {
-
-                $command = Command::where('id', $commandId)
+                $command = Command::where('idempotency_key', $idempotencyKey)
                     ->lockForUpdate()
-                    ->firstOrFail();
+                    ->first();
 
-                // Se já processado, evita duplicidade
+                if (!$command) {
+                    $command = $commandRepository->create($this->payload);
+                }
+
                 if ($command->status === EnumCommandStatus::PROCESSED) {
                     return;
                 }
 
                 $handler->handle($command);
             });
-
         } catch (Throwable $e) {
-
-            // Se falhou antes da transação completar
-            $command = Command::find($commandId);
-
             if ($command) {
                 $commandRepository->markAsFailed(
                     $command,
@@ -67,7 +65,7 @@ class ProcessApiPost implements ShouldQueue
                 );
             }
 
-            throw $e; // mantém retry funcionando
+            throw $e;
         }
     }
 
@@ -76,13 +74,13 @@ class ProcessApiPost implements ShouldQueue
      */
     public function failed(Throwable $exception): void
     {
-        $commandId = $this->payload['command_id'] ?? null;
+        $idempotencyKey = $this->payload['idempotency_key'] ?? null;
 
-        if (!$commandId) {
+        if (!$idempotencyKey) {
             return;
         }
 
-        $command = Command::find($commandId);
+        $command = Command::where('idempotency_key', $idempotencyKey)->first();
 
         if ($command) {
             app(CommandRepository::class)

@@ -16,12 +16,11 @@ class InternalOccurrenceController extends Controller
 {
     public function start(StartOccurrenceRequest $request): JsonResponse
     {
-
         $validated = $request->validated();
 
         $commandPayload = [
             'id' => (string) Str::uuid(),
-            'idempotency_key' => $request->header('Idempotency-Key'),
+            'idempotency_key' => null,
             'source' => 'sistema_interno',
             'type' => EnumCommandTypes::OCCURRENCE_IN_PROGRESS,
             'payload' => $validated,
@@ -30,9 +29,11 @@ class InternalOccurrenceController extends Controller
             'error' => null,
         ];
 
-        $key = $commandPayload['idempotency_key']
+        $key = $request->header('Idempotency-Key')
             . $commandPayload['type']->name()
             . $validated['occurrenceId'];
+
+        $commandPayload['idempotency_key'] = $key;
 
         $result = Redis::set($key, now()->toDateTimeString(), 'NX', 'EX', 60 * 60);
 
@@ -55,7 +56,7 @@ class InternalOccurrenceController extends Controller
 
         $commandPayload = [
             'id' => (string) Str::uuid(),
-            'idempotency_key' => $request->header('Idempotency-Key'),
+            'idempotency_key' => null,
             'source' => 'sistema_interno',
             'type' => EnumCommandTypes::OCCURRENCE_RESOLVED,
             'payload' => $validated,
@@ -64,9 +65,11 @@ class InternalOccurrenceController extends Controller
             'error' => null,
         ];
 
-        $key = $commandPayload['idempotency_key']
+        $key = $request->header('Idempotency-Key')
             . $commandPayload['type']->name()
             . $validated['occurrenceId'];
+
+        $commandPayload['idempotency_key'] = $key;
 
         $result = Redis::set($key, now()->toDateTimeString(), 'NX', 'EX', 60 * 60);
 
@@ -89,7 +92,7 @@ class InternalOccurrenceController extends Controller
 
         $commandPayload = [
             'id' => (string) Str::uuid(),
-            'idempotency_key' => $request->header('Idempotency-Key'),
+            'idempotency_key' => null,
             'source' => 'sistema_interno',
             'type' => EnumCommandTypes::DISPATCH_ASSIGNED,
             'payload' => $validated,
@@ -98,10 +101,12 @@ class InternalOccurrenceController extends Controller
             'error' => null,
         ];
 
-        $key = $commandPayload['idempotency_key']
+        $key = $request->header('Idempotency-Key')
             . $commandPayload['type']->name()
             . $validated['occurrenceId']
             . $validated['resourceCode'];
+
+        $commandPayload['idempotency_key'] = $key;
 
         $result = Redis::set($key, now()->toDateTimeString(), 'NX', 'EX', 60 * 60);
 

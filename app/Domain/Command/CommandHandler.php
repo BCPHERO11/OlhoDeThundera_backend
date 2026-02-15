@@ -25,7 +25,9 @@ class CommandHandler
 
             try {
 
-                $type = EnumCommandTypes::from($command->type);
+                $type = $command->type instanceof EnumCommandTypes
+                    ? $command->type
+                    : EnumCommandTypes::from($command->type);
 
                 match ($type) {
 
@@ -35,20 +37,20 @@ class CommandHandler
                     ),
 
                     EnumCommandTypes::OCCURRENCE_IN_PROGRESS =>
-                    $this->occurrenceService->changeStatus(
-                        $command->payload['external_id'],
+                    $this->occurrenceService->changeStatusById(
+                        $command->payload['occurrenceId'],
                         EnumOccurrenceStatus::IN_PROGRESS
                     ),
 
                     EnumCommandTypes::OCCURRENCE_RESOLVED =>
-                    $this->occurrenceService->changeStatus(
-                        $command->payload['external_id'],
+                    $this->occurrenceService->changeStatusById(
+                        $command->payload['occurrenceId'],
                         EnumOccurrenceStatus::RESOLVED
                     ),
 
                     EnumCommandTypes::OCCURRENCE_CANCELLED =>
-                    $this->occurrenceService->changeStatus(
-                        $command->payload['external_id'],
+                    $this->occurrenceService->changeStatusById(
+                        $command->payload['occurrenceId'],
                         EnumOccurrenceStatus::CANCELLED
                     ),
 
@@ -59,19 +61,19 @@ class CommandHandler
 
                     EnumCommandTypes::DISPATCH_EN_ROUTE =>
                     $this->dispatchService->changeStatus(
-                        $command->payload['dispatch_id'],
+                        $command->payload['dispatchId'],
                         EnumDispatchStatus::EN_ROUTE
                     ),
 
                     EnumCommandTypes::DISPATCH_ON_SITE =>
                     $this->dispatchService->changeStatus(
-                        $command->payload['dispatch_id'],
+                        $command->payload['dispatchId'],
                         EnumDispatchStatus::ON_SITE
                     ),
 
                     EnumCommandTypes::DISPATCH_CLOSED =>
                     $this->dispatchService->changeStatus(
-                        $command->payload['dispatch_id'],
+                        $command->payload['dispatchId'],
                         EnumDispatchStatus::CLOSED
                     ),
                 };

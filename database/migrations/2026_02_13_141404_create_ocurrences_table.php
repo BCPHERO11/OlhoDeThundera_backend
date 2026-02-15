@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('occurrences', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('external_id')->unique()->nullable($value = false);
-            $table->unsignedTinyInteger('type')->index();
+            $table->string('type', 100)->index();
             $table->unsignedTinyInteger('status')
                 ->default(0)
                 ->index();

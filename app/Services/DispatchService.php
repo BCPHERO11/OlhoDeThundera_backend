@@ -15,9 +15,13 @@ class DispatchService
 
     public function create(array $payload)
     {
-        $payload['status'] = EnumDispatchStatus::ASSIGNED;
+        $dispatchData = [
+            'occurrence_id' => $payload['occurrenceId'],
+            'resource_code' => $payload['resourceCode'],
+            'status' => EnumDispatchStatus::ASSIGNED,
+        ];
 
-        return $this->repository->create($payload);
+        return $this->repository->create($dispatchData);
     }
 
     public function changeStatus(
