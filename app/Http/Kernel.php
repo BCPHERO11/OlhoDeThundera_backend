@@ -11,5 +11,6 @@ class Kernel extends HttpKernel
      */
     protected $routeMiddleware = [
         'api.key' => \App\Http\Middleware\ValidateApiKey::class,
+        'api.indempotency' => \App\Http\Middleware\ValidateIdempotencyKey::class,
     ];
 }
