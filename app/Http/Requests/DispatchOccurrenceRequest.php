@@ -10,7 +10,7 @@ class DispatchOccurrenceRequest extends FormRequest
     {
         return true;
     }
-
+  
     protected function prepareForValidation(): void
     {
         $this->merge([
@@ -30,7 +30,7 @@ class DispatchOccurrenceRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'occurrenceId.required' => 'O identificador da ocorrência na URL é obrigatório.',
+            'occurrenceId.required' => 'O identificador da ocorrência é obrigatório.',
             'occurrenceId.exists' => 'A ocorrência informada não existe.',
             'resourceCode.required' => 'O código do recurso despachado é obrigatório.',
             'assignedAt.required' => 'A data/hora do despacho é obrigatória.',
