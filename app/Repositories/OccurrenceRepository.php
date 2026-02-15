@@ -2,14 +2,11 @@
 namespace App\Repositories;
 
 use App\Models\Occurrence;
-use Illuminate\Support\Str;
 
 class OccurrenceRepository
 {
     public function create(array $data): Occurrence
     {
-        $data['id'] ??= (string) Str::uuid();
-
         return Occurrence::create($data);
     }
 

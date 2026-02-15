@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\EnumDispatchStatus;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
+use LogicException;
 
 class Dispatch extends Model
 {
@@ -22,6 +24,19 @@ class Dispatch extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $dispatch): void {
+            $dispatch->id ??= (string) Str::uuid();
+        });
+
+        static::updating(function (self $dispatch): void {
+            if ($dispatch->isDirty('id')) {
+                throw new LogicException('Dispatch.id é imutável.');
+            }
+        });
+    }
 
     public function occurrence()
     {
