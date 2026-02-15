@@ -16,6 +16,7 @@ class InternalOccurrenceController extends Controller
 {
     public function start(StartOccurrenceRequest $request): JsonResponse
     {
+
         $validated = $request->validated();
 
         $commandPayload = [
