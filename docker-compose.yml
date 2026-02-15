@@ -32,23 +32,11 @@ services:
       WEB_DOCUMENT_ROOT: /app/public
       PHP_MEMORY_LIMIT: 512M
       PHP_MAX_EXECUTION_TIME: 300
-
-  worker:
-    build:
-      context: .
-      dockerfile: ./docker/Dockerfile
-    command: ["php", "artisan", "queue:work", "--tries=3", "--sleep=3", "--verbose"]
-    volumes:
-      - ./:/app
-    depends_on:
-      - app
-      - redis
-    environment:
-      - QUEUE_CONNECTION=redis
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - CACHE_DRIVER=redis
-      - CACHE_STORE=redis
+        - QUEUE_CONNECTION=redis
+        - REDIS_HOST=redis
+        - REDIS_PORT=6379
+        - CACHE_DRIVER=redis
+        - CACHE_STORE=redis
 
 volumes:
   pgdata:

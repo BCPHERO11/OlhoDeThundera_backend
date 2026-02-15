@@ -1,19 +1,20 @@
 <?php
+
 namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
 
-class ValidateApiKey
+class ValidateIdempotencyKey
 {
     public function handle(Request $request, Closure $next)
     {
-        $apiKey = $request->header('X-API-Key');
+        $indempotencyKey = $request->header('Idempotency-Key');
 
-        if (!$apiKey || $apiKey !== config('services.integration.api_key')) {
+        if (!$indempotencyKey) {
             return response()->json([
-                'error' => 'Nao Autorizado'
-            ], 401);
+                'error' => 'Entidade Nao Processavel'
+            ], 422);
         }
 
         return $next($request);

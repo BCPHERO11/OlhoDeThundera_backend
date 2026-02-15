@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Enums\EnumCommandStatus;
 use App\Enums\EnumCommandTypes;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 class Command extends Model
 {
@@ -15,6 +14,7 @@ class Command extends Model
     public $timestamps = false; // só tem created_at manual
 
     protected $fillable = [
+        'id',
         'idempotency_key',
         'source',
         'type',
@@ -25,25 +25,12 @@ class Command extends Model
     ];
 
     protected $casts = [
-        'payload' => 'array',
+        'payload' => 'json',
         'status' => EnumCommandStatus::class,
         'type' => EnumCommandTypes::class,
         'source' => 'string',
         'processed_at' => 'datetime',
         'created_at' => 'datetime',
     ];
-
-    protected static function booted(): void
-    {
-        static::creating(function (Command $command) {
-            if (!$command->id) {
-                $command->id = (string) Str::uuid();
-            }
-
-            if (!$command->status) {
-                $command->status = EnumCommandStatus::PENDING;
-            }
-        });
-    }
 
 }

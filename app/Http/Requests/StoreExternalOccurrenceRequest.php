@@ -39,43 +39,4 @@ class StoreExternalOccurrenceRequest extends FormRequest
             "reportedAt.required" => "A data/hora de reporte da ocorrência é obrigatória.",
         ];
     }
-
-    /**
-     * Preparar dados antes da validação.
-     */
-    protected function prepareForValidation()
-    {
-        // você pode sanitizar/normalizar dados aqui
-        $this->merge([
-            "reportedAt" => $this->input("reportedAt")
-                ? date("Y-m-d H:i:s", strtotime($this->input("reportedAt")))
-                : null,
-        ]);
-    }
-
-    /**
-     * Valida cabeçalhos antes de continuar.
-     */
-    protected function passedValidation()
-    {
-        $this->validateHeaders();
-    }
-
-    /**
-     * Valida os headers obrigatórios.
-     */
-    protected function validateHeaders()
-    {
-        if (!$this->header("X-Api-Key")) {
-            abort(response()->json([
-                "message" => "Cabeçalho de autenticação (X-Api-Key) é obrigatório"
-            ], 401));
-        }
-
-        if (!$this->header("Idempotency-Key")) {
-            abort(response()->json([
-                "message" => "Cabeçalho de Idempotência (Idempotency-Key) é obrigatório"
-            ], 422));
-        }
-    }
 }

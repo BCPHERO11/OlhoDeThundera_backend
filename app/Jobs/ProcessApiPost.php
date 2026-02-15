@@ -21,5 +21,12 @@ class ProcessApiPost implements ShouldQueue
 
     public function handle()
     {
+        $command = $this->payload;
+        dd($command, 'Chegou aqui!');
+    }
+
+    public function failed()
+    {
+
     }
 }
