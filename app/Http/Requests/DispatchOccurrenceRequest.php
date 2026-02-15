@@ -10,6 +10,13 @@ class DispatchOccurrenceRequest extends FormRequest
     {
         return true;
     }
+  
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'occurrenceId' => $this->route('uuid'),
+        ]);
+    }
 
     public function rules(): array
     {

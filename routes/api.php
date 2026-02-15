@@ -8,7 +8,7 @@ Route::middleware(['api.key', 'api.indempotency'])->group(function () {
         Route::post('occurrences', [ExternalOccurrenceController::class, 'store']);
     });
 
-    Route::prefix('occurrences')->group(function () {
+    Route::prefix('occurrences/{uuid}')->whereUuid('uuid')->group(function () {
         Route::post('start', [InternalOccurrenceController::class, 'start']);
         Route::post('resolve', [InternalOccurrenceController::class, 'resolve']);
         Route::post('dispatch', [InternalOccurrenceController::class, 'dispatch']);

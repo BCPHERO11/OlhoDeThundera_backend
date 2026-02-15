@@ -11,6 +11,13 @@ class StartOccurrenceRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'occurrenceId' => $this->route('uuid'),
+        ]);
+    }
+
     public function rules(): array
     {
         return [
@@ -22,7 +29,7 @@ class StartOccurrenceRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'occurrenceId.required' => 'O identificador da ocorrência é obrigatório.',
+            'occurrenceId.required' => 'O identificador da ocorrência na URL é obrigatório.',
             'occurrenceId.exists' => 'A ocorrência informada não existe.',
             'startedAt.required' => 'A data/hora de início da ocorrência é obrigatória.',
         ];
