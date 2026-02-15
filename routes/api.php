@@ -11,6 +11,6 @@ Route::middleware(['api.key', 'api.indempotency'])->group(function () {
     Route::prefix('occurrences/{uuid}')->whereUuid('uuid')->group(function () {
         Route::post('start', [InternalOccurrenceController::class, 'start']);
         Route::post('resolve', [InternalOccurrenceController::class, 'resolve']);
-        Route::post('dispatch', [InternalOccurrenceController::class, 'dispatch']);
+        Route::post('dispatches', [InternalOccurrenceController::class, 'dispatch']);
     });
 });
