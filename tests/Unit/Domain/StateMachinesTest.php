@@ -47,7 +47,7 @@ class StateMachinesTest extends TestCase
         $this->assertTrue(true);
     }
 
-    public function test_dispatch_state_machine_blocks_invalid_transition(): void
+    public function test_dispatch_state_machine_blocks_invalid_direct_transition_from_assigned_to_on_site(): void
     {
         $machine = new DispatchStateMachine();
 
@@ -55,7 +55,7 @@ class StateMachinesTest extends TestCase
 
         $machine->validate(
             EnumDispatchStatus::ASSIGNED,
-            EnumDispatchStatus::CLOSED
+            EnumDispatchStatus::ON_SITE
         );
     }
 }

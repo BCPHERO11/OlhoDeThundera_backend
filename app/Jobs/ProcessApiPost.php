@@ -1,10 +1,10 @@
 <?php
 namespace App\Jobs;
 
-use App\Models\Command;
-use App\Repositories\CommandRepository;
 use App\Domain\Command\CommandHandler;
 use App\Enums\EnumCommandStatus;
+use App\Models\Command;
+use App\Repositories\CommandRepository;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -34,22 +34,26 @@ class ProcessApiPost implements ShouldQueue
             throw new \InvalidArgumentException('idempotency_key ausente no payload');
         }
 
-        $command = null;
+        $command = Command::where('idempotency_key', $idempotencyKey)
+            ->first();
+
+        if (!$command) {
+            $command = $commandRepository->create($this->payload);
+        }
+
+        if ($command->status === EnumCommandStatus::PROCESSED) {
+            return;
+        }
 
         try {
             DB::transaction(function () use (
                 $idempotencyKey,
                 $handler,
-                $commandRepository,
                 &$command
             ) {
                 $command = Command::where('idempotency_key', $idempotencyKey)
                     ->lockForUpdate()
-                    ->first();
-
-                if (!$command) {
-                    $command = $commandRepository->create($this->payload);
-                }
+                    ->firstOrFail();
 
                 if ($command->status === EnumCommandStatus::PROCESSED) {
                     return;
@@ -58,12 +62,10 @@ class ProcessApiPost implements ShouldQueue
                 $handler->handle($command);
             });
         } catch (Throwable $e) {
-            if ($command) {
-                $commandRepository->markAsFailed(
-                    $command,
-                    $e->getMessage()
-                );
-            }
+            $commandRepository->markAsFailed(
+                $command->refresh(),
+                $e->getMessage()
+            );
 
             throw $e;
         }

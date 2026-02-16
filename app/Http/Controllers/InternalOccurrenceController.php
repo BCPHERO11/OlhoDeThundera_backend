@@ -42,14 +42,14 @@ class InternalOccurrenceController extends Controller
 
         if (!$result) {
             return response()->json([
-                'message' => 'Solicitação já recebida para criação da ocorrência',
+                'message' => 'Cadastro já solicitado',
             ], 409);
         }
 
         ProcessApiPost::dispatch($commandPayload);
 
         return response()->json([
-            'message' => 'Solicitação de criação da ocorrência recebida e colocada na fila',
+            'message' => 'Ocorrência recebida e colocada na fila',
         ], 202);
     }
 

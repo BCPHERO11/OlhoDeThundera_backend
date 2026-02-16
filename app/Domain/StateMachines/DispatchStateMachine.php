@@ -9,7 +9,6 @@ class DispatchStateMachine
     private array $transitions = [
         EnumDispatchStatus::ASSIGNED->value => [
             EnumDispatchStatus::EN_ROUTE,
-            EnumDispatchStatus::ON_SITE,
         ],
         EnumDispatchStatus::EN_ROUTE->value => [
             EnumDispatchStatus::ON_SITE,
