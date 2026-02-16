@@ -1,6 +1,7 @@
 <?php
 namespace App\Repositories;
 
+use App\Enums\EnumDispatchStatus;
 use App\Models\Dispatch;
 
 class DispatchRepository
@@ -17,9 +18,41 @@ class DispatchRepository
             ->first();
     }
 
+    public function findByOccurrenceAndResourceForUpdate(
+        string $occurrenceId,
+        string $resourceCode
+    ): ?Dispatch {
+        return Dispatch::where('occurrence_id', $occurrenceId)
+            ->where('resource_code', $resourceCode)
+            ->lockForUpdate()
+            ->first();
+    }
+
+    public function existsByOccurrenceId(string $occurrenceId): bool
+    {
+        return Dispatch::where('occurrence_id', $occurrenceId)->exists();
+    }
+
+    public function existsByOccurrenceIdAndStatus(
+        string $occurrenceId,
+        EnumDispatchStatus $status
+    ): bool {
+        return Dispatch::where('occurrence_id', $occurrenceId)
+            ->where('status', $status)
+            ->exists();
+    }
+
+    public function closeAllByOccurrenceId(string $occurrenceId): void
+    {
+        Dispatch::where('occurrence_id', $occurrenceId)
+            ->where('status', '!=', EnumDispatchStatus::CLOSED->value)
+            ->update(['status' => EnumDispatchStatus::CLOSED]);
+    }
+
     public function save(Dispatch $dispatch): Dispatch
     {
         $dispatch->save();
+
         return $dispatch->refresh();
     }
 }
