@@ -11,7 +11,7 @@ Route::middleware(['api', 'api.key', 'api.indempotency'])->group(function () {
     });
 
 
-    Route::get('occurrences{status}{type}', [ViewItensController::class, 'index']);
+    Route::get('occurrences/{status?}/{type?}', [ViewItensController::class, 'index']);
 
     Route::prefix('occurrences')->group(function () {
 

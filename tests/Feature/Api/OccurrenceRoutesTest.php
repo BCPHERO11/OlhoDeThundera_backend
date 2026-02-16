@@ -225,7 +225,7 @@ class OccurrenceRoutesTest extends TestCase
             ],
         ]);
 
-        $response = $this->getJson('/api/occurrences?status=in_progress&type=incendio_urbano', [
+        $response = $this->getJson('/api/occurrences/in_progress/incendio_urbano', [
             'X-API-Key' => 'test-api-key',
             'Idempotency-Key' => 'internal-list-key-001',
         ]);
@@ -240,7 +240,7 @@ class OccurrenceRoutesTest extends TestCase
 
     public function test_internal_occurrence_list_route_validates_status_filter(): void
     {
-        $response = $this->getJson('/api/occurrences?status=invalid_status', [
+        $response = $this->getJson('/api/occurrences/invalid_status', [
             'X-API-Key' => 'test-api-key',
             'Idempotency-Key' => 'internal-list-key-002',
         ]);
