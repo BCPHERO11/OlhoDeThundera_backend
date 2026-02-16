@@ -2,9 +2,7 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-
-class StoreExternalOccurrenceRequest extends FormRequest
+class StoreExternalOccurrenceRequest extends ApiFormRequest
 {
     /**
      * Determina se o usuário pode fazer essa requisição.

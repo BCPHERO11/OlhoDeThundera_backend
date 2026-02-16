@@ -50,6 +50,22 @@ class OccurrenceRoutesTest extends TestCase
         });
     }
 
+
+    public function test_internal_start_route_returns_json_validation_errors_without_accept_header(): void
+    {
+        $occurrenceId = (string) Str::uuid();
+
+        $response = $this->post("/api/occurrences/{$occurrenceId}/start", [], [
+            'X-API-Key' => 'test-api-key',
+            'Idempotency-Key' => 'internal-key-002',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertHeader('Content-Type', 'application/json')
+            ->assertJsonPath('message', 'Os dados enviados são inválidos.')
+            ->assertJsonValidationErrors(['startedAt', 'occurrenceId']);
+    }
+
     public function test_internal_start_route_dispatches_camel_case_command_payload(): void
     {
         Queue::fake();
