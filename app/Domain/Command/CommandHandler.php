@@ -52,9 +52,9 @@ class CommandHandler
                     $this->dispatchService->create($command->payload),
 
                     EnumCommandTypes::DISPATCH_ON_SITE =>
-                    $this->dispatchService->changeStatusByOccurrenceAndResource(
+                    $this->dispatchService->changeStatusByIdAndOccurrence(
+                        $command->payload['dispatchId'],
                         $command->payload['occurrenceId'],
-                        $command->payload['resourceCode'],
                         EnumDispatchStatus::ON_SITE
                     ),
                 };

@@ -184,7 +184,7 @@ class InternalOccurrenceController extends Controller
         $key = $request->header('Idempotency-Key')
             . $commandPayload['type']->name()
             . $validated['occurrenceId']
-            . $validated['resourceCode'];
+            . $validated['dispatchId'];
 
         $commandPayload['idempotency_key'] = $key;
 

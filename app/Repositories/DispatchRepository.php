@@ -18,12 +18,13 @@ class DispatchRepository
             ->first();
     }
 
-    public function findByOccurrenceAndResourceForUpdate(
-        string $occurrenceId,
-        string $resourceCode
+
+    public function findByIdAndOccurrenceForUpdate(
+        string $dispatchId,
+        string $occurrenceId
     ): ?Dispatch {
-        return Dispatch::where('occurrence_id', $occurrenceId)
-            ->where('resource_code', $resourceCode)
+        return Dispatch::where('id', $dispatchId)
+            ->where('occurrence_id', $occurrenceId)
             ->lockForUpdate()
             ->first();
     }

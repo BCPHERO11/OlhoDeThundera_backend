@@ -128,8 +128,19 @@ class OccurrenceRoutesTest extends TestCase
             'updated_at' => now(),
         ]);
 
+        $dispatchId = (string) Str::uuid();
+
+        DB::table('dispatches')->insert([
+            'id' => $dispatchId,
+            'occurrence_id' => $occurrenceId,
+            'resource_code' => 'ABT-99',
+            'status' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
         $response = $this->postJson("/api/occurrences/{$occurrenceId}/arrived", [
-            'resourceCode' => 'ABT-99',
+            'dispatchId' => $dispatchId,
         ], [
             'X-API-Key' => 'test-api-key',
             'Idempotency-Key' => 'internal-arrived-key-001',
@@ -137,10 +148,10 @@ class OccurrenceRoutesTest extends TestCase
 
         $response->assertAccepted();
 
-        Queue::assertPushed(ProcessApiPost::class, function (ProcessApiPost $job) use ($occurrenceId) {
+        Queue::assertPushed(ProcessApiPost::class, function (ProcessApiPost $job) use ($occurrenceId, $dispatchId) {
             return $job->payload['type'] === EnumCommandTypes::DISPATCH_ON_SITE
                 && $job->payload['payload']['occurrenceId'] === $occurrenceId
-                && $job->payload['payload']['resourceCode'] === 'ABT-99';
+                && $job->payload['payload']['dispatchId'] === $dispatchId;
         });
     }
 

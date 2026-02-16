@@ -40,40 +40,17 @@ class DispatchService
         });
     }
 
-    public function changeStatus(
-        string $id,
-        EnumDispatchStatus $newStatus
-    ) {
-        return DB::transaction(function () use ($id, $newStatus) {
-            $dispatch = $this->repository
-                ->findByIdForUpdate($id);
-
-            if (!$dispatch) {
-                throw new \DomainException('Dispatch não encontrado');
-            }
-
-            $this->stateMachine->validate(
-                $dispatch->status,
-                $newStatus
-            );
-
-            $dispatch->status = $newStatus;
-
-            return $this->repository->save($dispatch);
-        });
-    }
-
-    public function changeStatusByOccurrenceAndResource(
+    public function changeStatusByIdAndOccurrence(
+        string $dispatchId,
         string $occurrenceId,
-        string $resourceCode,
         EnumDispatchStatus $newStatus
     ) {
-        return DB::transaction(function () use ($occurrenceId, $resourceCode, $newStatus) {
+        return DB::transaction(function () use ($dispatchId, $occurrenceId, $newStatus) {
             $dispatch = $this->repository
-                ->findByOccurrenceAndResourceForUpdate($occurrenceId, $resourceCode);
+                ->findByIdAndOccurrenceForUpdate($dispatchId, $occurrenceId);
 
             if (!$dispatch) {
-                throw new \DomainException('Dispatch não encontrado para ocorrência e recurso informados');
+                throw new \DomainException('Dispatch não encontrado para ocorrência informada');
             }
 
             $this->stateMachine->validate(

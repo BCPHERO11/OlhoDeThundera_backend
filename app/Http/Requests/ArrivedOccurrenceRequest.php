@@ -20,7 +20,7 @@ class ArrivedOccurrenceRequest extends ApiFormRequest
     {
         return [
             'occurrenceId' => 'required|uuid|exists:occurrences,id',
-            'resourceCode' => 'required|string|max:50',
+            'dispatchId' => 'required|uuid|exists:dispatches,id',
         ];
     }
 
@@ -29,7 +29,8 @@ class ArrivedOccurrenceRequest extends ApiFormRequest
         return [
             'occurrenceId.required' => 'O identificador da ocorrência é obrigatório.',
             'occurrenceId.exists' => 'A ocorrência informada não existe.',
-            'resourceCode.required' => 'O código do recurso despachado é obrigatório.',
+            'dispatchId.required' => 'O identificador do dispatch é obrigatório.',
+            'dispatchId.exists' => 'O dispatch informado não existe.',
         ];
     }
 }
