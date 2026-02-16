@@ -11,6 +11,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
+use DomainException;
 use Throwable;
 
 class ProcessApiPost implements ShouldQueue
@@ -62,13 +63,26 @@ class ProcessApiPost implements ShouldQueue
                 $handler->handle($command);
             });
         } catch (Throwable $e) {
-            $commandRepository->markAsFailed(
-                $command->refresh(),
-                $e->getMessage()
-            );
+            $command = $command->refresh();
+
+            if ($command->status !== EnumCommandStatus::FAILED) {
+                $commandRepository->markAsFailed(
+                    $command,
+                    $this->resolveErrorMessage($e)
+                );
+            }
 
             throw $e;
         }
+    }
+
+    private function resolveErrorMessage(Throwable $exception): string
+    {
+        if ($exception instanceof DomainException) {
+            return 'Erro por quebra de fluxo: ' . $exception->getMessage();
+        }
+
+        return $exception->getMessage();
     }
 
     /**
