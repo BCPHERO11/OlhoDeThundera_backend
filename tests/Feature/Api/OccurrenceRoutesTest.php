@@ -189,4 +189,66 @@ class OccurrenceRoutesTest extends TestCase
                 && $job->payload['payload']['occurrenceId'] === $occurrenceId;
         });
     }
+
+    public function test_internal_occurrence_list_route_returns_filtered_data(): void
+    {
+        DB::table('occurrences')->insert([
+            [
+                'id' => (string) Str::uuid(),
+                'external_id' => (string) Str::uuid(),
+                'type' => 'incendio_urbano',
+                'status' => 1,
+                'description' => 'Ocorrência em andamento de incêndio urbano',
+                'reported_at' => now()->subHour(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => (string) Str::uuid(),
+                'external_id' => (string) Str::uuid(),
+                'type' => 'deslizamento',
+                'status' => 1,
+                'description' => 'Ocorrência em andamento de deslizamento',
+                'reported_at' => now()->subMinutes(30),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => (string) Str::uuid(),
+                'external_id' => (string) Str::uuid(),
+                'type' => 'incendio_urbano',
+                'status' => 0,
+                'description' => 'Ocorrência reportada de incêndio urbano',
+                'reported_at' => now()->subMinutes(10),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
+        $response = $this->getJson('/api/occurrences?status=in_progress&type=incendio_urbano', [
+            'X-API-Key' => 'test-api-key',
+            'Idempotency-Key' => 'internal-list-key-001',
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('filters.status', 'in_progress')
+            ->assertJsonPath('filters.type', 'incendio_urbano')
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.type', 'incendio_urbano')
+            ->assertJsonPath('data.0.status', 'in_progress');
+    }
+
+    public function test_internal_occurrence_list_route_validates_status_filter(): void
+    {
+        $response = $this->getJson('/api/occurrences?status=invalid_status', [
+            'X-API-Key' => 'test-api-key',
+            'Idempotency-Key' => 'internal-list-key-002',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonPath('message', 'Os dados fornecidos são inválidos.')
+            ->assertJsonStructure([
+                'errors' => ['status'],
+            ]);
+    }
 }
