@@ -15,7 +15,6 @@ class CreateOccurrenceRequest extends ApiFormRequest
             'externalId' => 'required|string|unique:occurrences,external_id',
             'description' => 'required|string',
             'type' => 'required|string',
-            'reportedAt' => 'required|date',
         ];
     }
 
@@ -24,7 +23,6 @@ class CreateOccurrenceRequest extends ApiFormRequest
         return [
             'externalId.required' => 'O identificador externo da ocorrência é obrigatório.',
             'externalId.unique' => 'A ocorrência informada já foi registrada.',
-            'reportedAt.required' => 'A data/hora de reporte da ocorrência é obrigatória.',
         ];
     }
 }

@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres:14.4
-    container_name: postgres_delfos
+    container_name: postgres_thundera
     environment:
       POSTGRES_DB: delfos
       POSTGRES_USER: delfos_user
@@ -21,7 +21,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
-    container_name: API_olho_de_delfos
+    container_name: back_Olho_De_Thandera
     user: "1000:1000" #Garante que os arquivos serão criados como root
     ports:
       - "8070:80"     #HTTP Lembrando que a esquerda é a da máquina e a doreita é a do conteiner

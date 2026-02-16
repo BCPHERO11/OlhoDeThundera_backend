@@ -20,6 +20,7 @@ class InternalOccurrenceController extends Controller
     public function create(CreateOccurrenceRequest $request): JsonResponse
     {
         $validated = $request->validated();
+        $validated['reportedAt'] = now()->toDateTimeString();
 
         $commandPayload = [
             'id' => (string) Str::uuid(),
