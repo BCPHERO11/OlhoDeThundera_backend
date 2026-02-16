@@ -2,9 +2,7 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-
-class ResolveOccurrenceRequest extends FormRequest
+class ResolveOccurrenceRequest extends ApiFormRequest
 {
     public function authorize(): bool
     {

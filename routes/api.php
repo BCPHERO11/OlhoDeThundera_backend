@@ -3,7 +3,7 @@
 use App\Http\Controllers\ExternalOccurrenceController;
 use App\Http\Controllers\InternalOccurrenceController;
 
-Route::middleware(['api.key', 'api.indempotency'])->group(function () {
+Route::middleware(['api', 'api.key', 'api.indempotency'])->group(function () {
     Route::prefix('integrations')->group(function () {
         Route::post('occurrences', [ExternalOccurrenceController::class, 'store']);
     });
