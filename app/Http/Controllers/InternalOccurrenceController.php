@@ -17,6 +17,7 @@ class InternalOccurrenceController extends Controller
     public function start(StartOccurrenceRequest $request): JsonResponse
     {
         $validated = $request->validated();
+        $validated['assignedAt'] = now()->toDateTimeString();
 
         $commandPayload = [
             'id' => (string) Str::uuid(),
@@ -53,6 +54,7 @@ class InternalOccurrenceController extends Controller
     public function resolve(ResolveOccurrenceRequest $request): JsonResponse
     {
         $validated = $request->validated();
+        $validated['assignedAt'] = now()->toDateTimeString();
 
         $commandPayload = [
             'id' => (string) Str::uuid(),
@@ -89,6 +91,7 @@ class InternalOccurrenceController extends Controller
     public function dispatch(DispatchOccurrenceRequest $request): JsonResponse
     {
         $validated = $request->validated();
+        $validated['assignedAt'] = now()->toDateTimeString();
 
         $commandPayload = [
             'id' => (string) Str::uuid(),

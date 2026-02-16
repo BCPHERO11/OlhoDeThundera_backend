@@ -20,8 +20,6 @@ class ResolveOccurrenceRequest extends ApiFormRequest
     {
         return [
             'occurrenceId' => 'required|uuid|exists:occurrences,id',
-            'resolvedAt' => 'required|date',
-            'resolutionNotes' => 'nullable|string|max:500',
         ];
     }
 
@@ -30,7 +28,6 @@ class ResolveOccurrenceRequest extends ApiFormRequest
         return [
             'occurrenceId.required' => 'O identificador da ocorrência na URL é obrigatório.',
             'occurrenceId.exists' => 'A ocorrência informada não existe.',
-            'resolvedAt.required' => 'A data/hora de resolução da ocorrência é obrigatória.',
         ];
     }
 }
