@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ExternalOccurrenceController;
 use App\Http\Controllers\InternalOccurrenceController;
+use App\Http\Controllers\ViewItensController;
 
 Route::middleware(['api', 'api.key', 'api.indempotency'])->group(function () {
     Route::prefix('integrations')->group(function () {
@@ -11,6 +12,8 @@ Route::middleware(['api', 'api.key', 'api.indempotency'])->group(function () {
 
 
     Route::prefix('occurrences')->group(function () {
+        Route::get('/', [ViewItensController::class, 'index']);
+
         // Rota que registra ocorrencias // Occurrence = 0 e sem dispatch Command = Occurrence_created
         Route::post('create', [InternalOccurrenceController::class, 'create']);
 
