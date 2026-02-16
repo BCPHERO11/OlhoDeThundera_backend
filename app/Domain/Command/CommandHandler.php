@@ -61,8 +61,12 @@ class CommandHandler
 
                 $this->commandRepository->markAsProcessed($command);
             } catch (\Throwable $e) {
+                $errorMessage = $e instanceof \DomainException
+                    ? 'Erro por quebra de fluxo: ' . $e->getMessage()
+                    : $e->getMessage();
+
                 $this->commandRepository
-                    ->markAsFailed($command, $e->getMessage());
+                    ->markAsFailed($command, $errorMessage);
 
                 throw $e;
             }

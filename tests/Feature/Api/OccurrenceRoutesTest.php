@@ -102,10 +102,14 @@ class OccurrenceRoutesTest extends TestCase
             'Idempotency-Key' => 'internal-create-key-001',
         ]);
 
-        $response->assertAccepted();
+        $response->assertAccepted()
+            ->assertJson([
+                'message' => 'Ocorrência recebida e colocada na fila',
+            ]);
 
         Queue::assertPushed(ProcessApiPost::class, function (ProcessApiPost $job) use ($externalId) {
             return $job->payload['type'] === EnumCommandTypes::OCCURRENCE_CREATED
+                && $job->payload['source'] === 'sistema_interno'
                 && $job->payload['payload']['externalId'] === $externalId;
         });
     }

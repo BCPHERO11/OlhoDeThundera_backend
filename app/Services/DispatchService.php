@@ -26,7 +26,11 @@ class DispatchService
                 throw new \DomainException('Occurrence não encontrada para despacho');
             }
 
-            if (in_array($occurrence->status, [EnumOccurrenceStatus::RESOLVED, EnumOccurrenceStatus::CANCELLED], true)) {
+            if ($occurrence->status === EnumOccurrenceStatus::CANCELLED) {
+                throw new \DomainException('Ocorrência já cancelada');
+            }
+
+            if ($occurrence->status === EnumOccurrenceStatus::RESOLVED) {
                 throw new \DomainException('Não é possível criar dispatch para ocorrência finalizada.');
             }
 
