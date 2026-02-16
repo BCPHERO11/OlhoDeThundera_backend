@@ -2,13 +2,13 @@
 
 namespace App\Domain\Command;
 
-use App\Models\Command;
 use App\Enums\EnumCommandTypes;
-use App\Enums\EnumOccurrenceStatus;
 use App\Enums\EnumDispatchStatus;
+use App\Enums\EnumOccurrenceStatus;
+use App\Models\Command;
 use App\Repositories\CommandRepository;
-use App\Services\OccurrenceService;
 use App\Services\DispatchService;
+use App\Services\OccurrenceService;
 use Illuminate\Support\Facades\DB;
 
 class CommandHandler
@@ -22,19 +22,14 @@ class CommandHandler
     public function handle(Command $command): void
     {
         DB::transaction(function () use ($command) {
-
             try {
-
                 $type = $command->type instanceof EnumCommandTypes
                     ? $command->type
                     : EnumCommandTypes::from($command->type);
 
                 match ($type) {
-
                     EnumCommandTypes::OCCURRENCE_CREATED =>
-                    $this->occurrenceService->create(
-                        $command->payload
-                    ),
+                    $this->occurrenceService->create($command->payload),
 
                     EnumCommandTypes::OCCURRENCE_IN_PROGRESS =>
                     $this->occurrenceService->changeStatusById(
@@ -43,9 +38,8 @@ class CommandHandler
                     ),
 
                     EnumCommandTypes::OCCURRENCE_RESOLVED =>
-                    $this->occurrenceService->changeStatusById(
-                        $command->payload['occurrenceId'],
-                        EnumOccurrenceStatus::RESOLVED
+                    $this->resolveOccurrenceAndCloseDispatches(
+                        $command->payload['occurrenceId']
                     ),
 
                     EnumCommandTypes::OCCURRENCE_CANCELLED =>
@@ -55,39 +49,33 @@ class CommandHandler
                     ),
 
                     EnumCommandTypes::DISPATCH_ASSIGNED =>
-                    $this->dispatchService->create(
-                        $command->payload
-                    ),
-
-                    EnumCommandTypes::DISPATCH_EN_ROUTE =>
-                    $this->dispatchService->changeStatus(
-                        $command->payload['dispatchId'],
-                        EnumDispatchStatus::EN_ROUTE
-                    ),
+                    $this->dispatchService->create($command->payload),
 
                     EnumCommandTypes::DISPATCH_ON_SITE =>
-                    $this->dispatchService->changeStatus(
+                    $this->dispatchService->changeStatusByIdAndOccurrence(
                         $command->payload['dispatchId'],
+                        $command->payload['occurrenceId'],
                         EnumDispatchStatus::ON_SITE
-                    ),
-
-                    EnumCommandTypes::DISPATCH_CLOSED =>
-                    $this->dispatchService->changeStatus(
-                        $command->payload['dispatchId'],
-                        EnumDispatchStatus::CLOSED
                     ),
                 };
 
-                $this->commandRepository
-                    ->markAsProcessed($command);
-
+                $this->commandRepository->markAsProcessed($command);
             } catch (\Throwable $e) {
-
                 $this->commandRepository
                     ->markAsFailed($command, $e->getMessage());
 
                 throw $e;
             }
         });
+    }
+
+    private function resolveOccurrenceAndCloseDispatches(string $occurrenceId): void
+    {
+        $this->occurrenceService->changeStatusById(
+            $occurrenceId,
+            EnumOccurrenceStatus::RESOLVED
+        );
+
+        $this->dispatchService->closeAllByOccurrenceId($occurrenceId);
     }
 }

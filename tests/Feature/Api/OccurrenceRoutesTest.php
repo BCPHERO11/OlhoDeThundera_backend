@@ -83,4 +83,106 @@ class OccurrenceRoutesTest extends TestCase
                 && isset($job->payload['idempotency_key']);
         });
     }
+
+
+    public function test_internal_create_route_dispatches_occurrence_created_command(): void
+    {
+        Queue::fake();
+        Redis::shouldReceive('set')->once()->andReturn(true);
+
+        $externalId = (string) Str::uuid();
+
+        $response = $this->postJson('/api/occurrences/create', [
+            'externalId' => $externalId,
+            'description' => 'Teste interno',
+            'type' => 'incendio_urbano',
+            'reportedAt' => now()->toIso8601String(),
+        ], [
+            'X-API-Key' => 'test-api-key',
+            'Idempotency-Key' => 'internal-create-key-001',
+        ]);
+
+        $response->assertAccepted();
+
+        Queue::assertPushed(ProcessApiPost::class, function (ProcessApiPost $job) use ($externalId) {
+            return $job->payload['type'] === EnumCommandTypes::OCCURRENCE_CREATED
+                && $job->payload['payload']['externalId'] === $externalId;
+        });
+    }
+
+    public function test_internal_arrived_route_dispatches_dispatch_on_site_command_payload(): void
+    {
+        Queue::fake();
+        Redis::shouldReceive('set')->once()->andReturn(true);
+
+        $occurrenceId = (string) Str::uuid();
+
+        DB::table('occurrences')->insert([
+            'id' => $occurrenceId,
+            'external_id' => (string) Str::uuid(),
+            'type' => 'incendio_urbano',
+            'status' => 0,
+            'description' => 'Ocorrência existente',
+            'reported_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $dispatchId = (string) Str::uuid();
+
+        DB::table('dispatches')->insert([
+            'id' => $dispatchId,
+            'occurrence_id' => $occurrenceId,
+            'resource_code' => 'ABT-99',
+            'status' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->postJson("/api/occurrences/{$occurrenceId}/arrived", [
+            'dispatchId' => $dispatchId,
+        ], [
+            'X-API-Key' => 'test-api-key',
+            'Idempotency-Key' => 'internal-arrived-key-001',
+        ]);
+
+        $response->assertAccepted();
+
+        Queue::assertPushed(ProcessApiPost::class, function (ProcessApiPost $job) use ($occurrenceId, $dispatchId) {
+            return $job->payload['type'] === EnumCommandTypes::DISPATCH_ON_SITE
+                && $job->payload['payload']['occurrenceId'] === $occurrenceId
+                && $job->payload['payload']['dispatchId'] === $dispatchId;
+        });
+    }
+
+    public function test_internal_cancel_route_dispatches_occurrence_cancelled_command_payload(): void
+    {
+        Queue::fake();
+        Redis::shouldReceive('set')->once()->andReturn(true);
+
+        $occurrenceId = (string) Str::uuid();
+
+        DB::table('occurrences')->insert([
+            'id' => $occurrenceId,
+            'external_id' => (string) Str::uuid(),
+            'type' => 'incendio_urbano',
+            'status' => 0,
+            'description' => 'Ocorrência existente',
+            'reported_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->postJson("/api/occurrences/{$occurrenceId}/cancel", [], [
+            'X-API-Key' => 'test-api-key',
+            'Idempotency-Key' => 'internal-cancel-key-001',
+        ]);
+
+        $response->assertAccepted();
+
+        Queue::assertPushed(ProcessApiPost::class, function (ProcessApiPost $job) use ($occurrenceId) {
+            return $job->payload['type'] === EnumCommandTypes::OCCURRENCE_CANCELLED
+                && $job->payload['payload']['occurrenceId'] === $occurrenceId;
+        });
+    }
 }
