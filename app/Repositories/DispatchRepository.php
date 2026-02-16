@@ -29,7 +29,6 @@ class DispatchRepository
             ->first();
     }
 
-
     public function existsByOccurrenceId(string $occurrenceId): bool
     {
         return Dispatch::where('occurrence_id', $occurrenceId)->exists();
