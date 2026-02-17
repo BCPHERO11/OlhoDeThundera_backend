@@ -23,6 +23,8 @@ class CommandHandler
 
     public function handle(Command $command): void
     {
+        app()->instance('audit.command_id', $command->id);
+
         try {
             DB::transaction(function () use ($command) {
                 $type = $command->type instanceof EnumCommandTypes
@@ -69,6 +71,8 @@ class CommandHandler
                 ->markAsFailed($command, $errorMessage);
 
             throw $e;
+        } finally {
+            app()->forgetInstance('audit.command_id');
         }
     }
 

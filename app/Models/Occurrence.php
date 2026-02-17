@@ -13,6 +13,8 @@ class Occurrence extends Model
     protected $keyType = 'string';
     public $incrementing = false;
 
+    private ?array $auditBeforeSnapshot = null;
+
     protected $fillable = [
         'external_id',
         'type',
@@ -34,6 +36,16 @@ class Occurrence extends Model
             $occurrence->id ??= (string) Str::uuid();
         });
 
+        static::created(function (self $occurrence): void {
+            $occurrence->logs()->create([
+                'action' => 'created',
+                'before' => null,
+                'after' => $occurrence->fresh()->toArray(),
+                'meta' => self::resolveAuditMeta(),
+                'created_at' => now(),
+            ]);
+        });
+
         static::updating(function (self $occurrence): void {
             if ($occurrence->isDirty('id')) {
                 throw new LogicException('Occurrence.id é imutável.');
@@ -42,7 +54,30 @@ class Occurrence extends Model
             if ($occurrence->isDirty('external_id')) {
                 throw new LogicException('Occurrence.external_id é imutável.');
             }
+
+            $occurrence->auditBeforeSnapshot = $occurrence->getOriginal();
         });
+
+        static::updated(function (self $occurrence): void {
+            $occurrence->logs()->create([
+                'action' => 'updated',
+                'before' => $occurrence->auditBeforeSnapshot,
+                'after' => $occurrence->fresh()->toArray(),
+                'meta' => self::resolveAuditMeta(),
+                'created_at' => now(),
+            ]);
+        });
+    }
+
+    private static function resolveAuditMeta(): ?array
+    {
+        if (!app()->bound('audit.command_id')) {
+            return null;
+        }
+
+        return [
+            'command_id' => app('audit.command_id'),
+        ];
     }
 
     public function dispatches()
