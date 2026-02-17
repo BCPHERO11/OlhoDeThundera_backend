@@ -6,7 +6,7 @@ use App\Http\Requests\ListOccurrencesRequest;
 use App\Repositories\OccurrenceRepository;
 use Illuminate\Http\JsonResponse;
 
-class ViewItensController extends Controller
+class OccurrenceController extends Controller
 {
     public function __construct(private OccurrenceRepository $occurrenceRepository) {}
 

@@ -1,9 +1,13 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ExternalOccurrenceController;
 use App\Http\Controllers\InternalOccurrenceController;
-use App\Http\Controllers\ViewItensController;
+use App\Http\Controllers\OccurrenceController;
+use Illuminate\Support\Facades\Route;
+
+Route::middleware(['api.key', 'throttle:api'])->group(function () {
+    Route::get('occurrences', [OccurrenceController::class, 'index']);
+});
 
 Route::middleware('api')->group(function () {
     Route::prefix('integrations')->group(function () {
@@ -24,8 +28,5 @@ Route::middleware('api')->group(function () {
             // Rota que cancela a ocorrencia Dispatch = 3 e Ocurrence 3 Command = Ocurrence_cancelled
             Route::post('cancel', [InternalOccurrenceController::class, 'cancel']);
         });
-
-     //Route::get('occurrences/{status?}/{type?}', [ViewItensController::class, 'index']);
     });
-
 });
