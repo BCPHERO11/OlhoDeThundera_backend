@@ -13,4 +13,13 @@ class Kernel extends HttpKernel
         'api.key' => \App\Http\Middleware\ValidateApiKey::class,
         'api.indempotency' => \App\Http\Middleware\ValidateIdempotencyKey::class,
     ];
+
+    protected $middlewareGroups = [
+        'api' => [
+            'api.key',
+            'api.indempotency',
+            'throttle:api',
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        ],
+    ];
 }

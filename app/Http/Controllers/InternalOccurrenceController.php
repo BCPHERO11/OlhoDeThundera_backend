@@ -19,11 +19,8 @@ class InternalOccurrenceController extends Controller
 {
     public function store(StoreOccurrenceRequest $request): JsonResponse
     {
-        $request->merge([
-            'reportedAt' => now()->toDateTimeString(),
-        ]);
-
         $validated = $request->validated();
+        $validated['reportedAt'] = now()->toDateTimeString();
 
         $commandPayload = [
             'id' => (string) Str::uuid(),
@@ -50,6 +47,7 @@ class InternalOccurrenceController extends Controller
             ], 409);
         }
 
+        dd($commandPayload);
         ProcessApiPost::dispatch($commandPayload);
 
         return response()->json([

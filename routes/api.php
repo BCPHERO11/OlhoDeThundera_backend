@@ -1,22 +1,21 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ExternalOccurrenceController;
 use App\Http\Controllers\InternalOccurrenceController;
 use App\Http\Controllers\ViewItensController;
 
-Route::middleware(['api', 'api.key', 'api.indempotency'])->group(function () {
+Route::middleware('api')->group(function () {
     Route::prefix('integrations')->group(function () {
         // Rota que registra ocorrencias // Occurrence = 0 e sem dispatch
         Route::post('occurrences', [ExternalOccurrenceController::class, 'store']);
     });
 
-
     Route::get('occurrences/{status?}/{type?}', [ViewItensController::class, 'index']);
 
     Route::prefix('occurrences')->group(function () {
-
         // Rota que registra ocorrencias // Occurrence = 0 e sem dispatch Command = Occurrence_created
-        Route::post('create', [InternalOccurrenceController::class, 'store']);
+        Route::post('store', [InternalOccurrenceController::class, 'store']);
 
         //TODO verificar as novas rotas criadas
         Route::prefix('{uuid}')->whereUuid('uuid')->group(function () {
@@ -32,6 +31,4 @@ Route::middleware(['api', 'api.key', 'api.indempotency'])->group(function () {
             Route::post('cancel', [InternalOccurrenceController::class, 'cancel']);
         });
     });
-
-    //Route::post('occurrences', [])
 });
