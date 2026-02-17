@@ -38,5 +38,27 @@ services:
       CACHE_DRIVER: redis
       CACHE_STORE: redis
 
+
+  worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: back_thundera_worker
+    user: "1000:1000"
+    working_dir: /app
+    command: php artisan queue:work --tries=3 --backoff=10 --timeout=120
+    volumes:
+      - ./:/app
+    depends_on:
+      - app
+      - db
+      - redis
+    environment:
+      QUEUE_CONNECTION: redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CACHE_DRIVER: redis
+      CACHE_STORE: redis
+
 volumes:
   pgdata:

@@ -71,7 +71,7 @@ class OccurrenceRoutesTest extends TestCase
             return $job->payload['type'] === EnumCommandTypes::DISPATCH_ASSIGNED
                 && $job->payload['payload']['occurrenceId'] === $occurrenceId
                 && $job->payload['payload']['resourceCode'] === 'ABT-99'
-                && $job->idempotencyKey === 'dispatch-key-001DISPATCH_ASSIGNED' . $occurrenceId;
+                && $job->payload['idempotency_key'] === 'dispatch-key-001dispatch.assigned' . $occurrenceId;
         });
     }
 

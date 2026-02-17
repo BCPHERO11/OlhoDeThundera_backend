@@ -36,6 +36,8 @@ class InternalOccurrenceController extends Controller
             . $commandPayload['type']->name()
             . $validated['occurrenceId'];
 
+        $commandPayload['idempotency_key'] = $key;
+
         $result = Redis::set($key, now()->toDateTimeString(), 'NX', 'EX', 60 * 60);
 
         if (!$result) {
@@ -70,6 +72,8 @@ class InternalOccurrenceController extends Controller
             . $commandPayload['type']->name()
             . $validated['occurrenceId'];
 
+        $commandPayload['idempotency_key'] = $key;
+
         $result = Redis::set($key, now()->toDateTimeString(), 'NX', 'EX', 60 * 60);
 
         if (!$result) {
@@ -103,6 +107,8 @@ class InternalOccurrenceController extends Controller
         $key = $request->header('Idempotency-Key')
             . $commandPayload['type']->name()
             . $validated['occurrenceId'];
+
+        $commandPayload['idempotency_key'] = $key;
 
         $result = Redis::set($key, now()->toDateTimeString(), 'NX', 'EX', 60 * 60);
 
