@@ -8,6 +8,7 @@ use App\Http\Requests\ArrivedOccurrenceRequest;
 use App\Http\Requests\CancelOccurrenceRequest;
 use App\Http\Requests\DispatchOccurrenceRequest;
 use App\Http\Requests\ResolveOccurrenceRequest;
+use App\Http\Requests\StoreOccurrenceRequest;
 use App\Http\Requests\StartOccurrenceRequest;
 use App\Jobs\ProcessApiPost;
 use Illuminate\Http\JsonResponse;
@@ -16,10 +17,13 @@ use Illuminate\Support\Str;
 
 class InternalOccurrenceController extends Controller
 {
-    public function store(StartOccurrenceRequest $request): JsonResponse
+    public function store(StoreOccurrenceRequest $request): JsonResponse
     {
+        $request->merge([
+            'reportedAt' => now()->toDateTimeString(),
+        ]);
+
         $validated = $request->validated();
-        $validated['reportedAt'] = now()->toDateTimeString();
 
         $commandPayload = [
             'id' => (string) Str::uuid(),
