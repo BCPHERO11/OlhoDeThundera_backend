@@ -16,7 +16,7 @@ class OccurrenceServiceTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_cria_ocorrencia_com_status_reported(): void
+    public function test_cria_ocorrencia_com_status_reportado(): void
     {
         $occurrence = app(OccurrenceService::class)->create([
             'externalId' => (string) Str::uuid(),

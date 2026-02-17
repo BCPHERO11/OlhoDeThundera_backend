@@ -50,7 +50,7 @@ class OccurrenceRoutesTest extends TestCase
         });
     }
 
-    public function test_rota_de_dispatch_envia_comando_de_dispatch_assigned(): void
+    public function test_rota_de_dispatch_envia_comando_de_despacho_atribuido(): void
     {
         Queue::fake();
         Redis::shouldReceive('set')->once()->andReturn(true);
@@ -74,7 +74,7 @@ class OccurrenceRoutesTest extends TestCase
         });
     }
 
-    public function test_rota_de_start_envia_comando_de_ocorrencia_em_andamento(): void
+    public function test_rota_de_inicio_envia_comando_de_ocorrencia_em_andamento(): void
     {
         Queue::fake();
         Redis::shouldReceive('set')->once()->andReturn(true);
@@ -95,7 +95,7 @@ class OccurrenceRoutesTest extends TestCase
         });
     }
 
-    public function test_rota_de_arrived_envia_comando_de_dispatch_on_site(): void
+    public function test_rota_de_chegada_envia_comando_de_dispatch_no_local(): void
     {
         Queue::fake();
         Redis::shouldReceive('set')->once()->andReturn(true);
@@ -129,7 +129,7 @@ class OccurrenceRoutesTest extends TestCase
         });
     }
 
-    public function test_rota_de_resolve_envia_comando_de_ocorrencia_resolvida(): void
+    public function test_rota_de_resolucao_envia_comando_de_ocorrencia_resolvida(): void
     {
         Queue::fake();
         Redis::shouldReceive('set')->once()->andReturn(true);
@@ -150,7 +150,7 @@ class OccurrenceRoutesTest extends TestCase
         });
     }
 
-    public function test_rota_de_cancel_envia_comando_de_ocorrencia_cancelada(): void
+    public function test_rota_de_cancelamento_envia_comando_de_ocorrencia_cancelada(): void
     {
         Queue::fake();
         Redis::shouldReceive('set')->once()->andReturn(true);

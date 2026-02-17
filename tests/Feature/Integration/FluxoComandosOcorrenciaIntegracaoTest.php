@@ -15,15 +15,15 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
-class OccurrenceCommandFlowIntegrationTest extends TestCase
+class FluxoComandosOcorrenciaIntegracaoTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_common_flow_create_dispatch_start_arrive_and_resolve_with_expected_states(): void
+    public function test_fluxo_principal_cria_dispatch_inicia_chega_e_resolve_com_estados_esperados(): void
     {
         $externalId = (string) Str::uuid();
 
-        $this->handleCommand(
+        $this->executarComando(
             EnumCommandTypes::OCCURRENCE_CREATED,
             [
                 'externalId' => $externalId,
@@ -31,7 +31,7 @@ class OccurrenceCommandFlowIntegrationTest extends TestCase
                 'type' => 'incendio_urbano',
                 'reportedAt' => now()->toIso8601String(),
             ],
-            'flow-created'
+            'fluxo-criacao'
         );
 
         $occurrence = Occurrence::where('external_id', $externalId)->firstOrFail();
@@ -41,13 +41,13 @@ class OccurrenceCommandFlowIntegrationTest extends TestCase
             [$occurrence->status->value]
         );
 
-        $this->handleCommand(
+        $this->executarComando(
             EnumCommandTypes::DISPATCH_ASSIGNED,
             [
                 'occurrenceId' => $occurrence->id,
                 'resourceCode' => 'ABT-01',
             ],
-            'flow-dispatch-assigned'
+            'fluxo-dispatch-assigned'
         );
 
         $dispatch = Dispatch::where('occurrence_id', $occurrence->id)->firstOrFail();
@@ -59,10 +59,10 @@ class OccurrenceCommandFlowIntegrationTest extends TestCase
 
         $dispatch->update(['status' => EnumDispatchStatus::EN_ROUTE]);
 
-        $this->handleCommand(
+        $this->executarComando(
             EnumCommandTypes::OCCURRENCE_IN_PROGRESS,
             ['occurrenceId' => $occurrence->id],
-            'flow-occurrence-started'
+            'fluxo-ocorrencia-iniciada'
         );
 
         $this->assertSame(
@@ -70,13 +70,13 @@ class OccurrenceCommandFlowIntegrationTest extends TestCase
             [$occurrence->fresh()->status->value, $dispatch->fresh()->status->value]
         );
 
-        $this->handleCommand(
+        $this->executarComando(
             EnumCommandTypes::DISPATCH_ON_SITE,
             [
                 'occurrenceId' => $occurrence->id,
                 'dispatchId' => $dispatch->id,
             ],
-            'flow-dispatch-arrived'
+            'fluxo-dispatch-chegada'
         );
 
         $this->assertSame(
@@ -84,10 +84,10 @@ class OccurrenceCommandFlowIntegrationTest extends TestCase
             [$occurrence->fresh()->status->value, $dispatch->fresh()->status->value]
         );
 
-        $this->handleCommand(
+        $this->executarComando(
             EnumCommandTypes::OCCURRENCE_RESOLVED,
             ['occurrenceId' => $occurrence->id],
-            'flow-occurrence-resolved'
+            'fluxo-ocorrencia-resolvida'
         );
 
         $this->assertSame(
@@ -96,7 +96,7 @@ class OccurrenceCommandFlowIntegrationTest extends TestCase
         );
     }
 
-    public function test_starting_occurrence_without_dispatch_marks_command_as_failed(): void
+    public function test_inicio_da_ocorrencia_sem_dispatch_marca_comando_como_falho(): void
     {
         $occurrence = Occurrence::create([
             'external_id' => (string) Str::uuid(),
@@ -107,8 +107,8 @@ class OccurrenceCommandFlowIntegrationTest extends TestCase
         ]);
 
         $command = Command::create([
-            'idempotency_key' => 'start-without-dispatch',
-            'source' => 'integration-test',
+            'idempotency_key' => 'inicio-sem-dispatch',
+            'source' => 'teste-integracao',
             'type' => EnumCommandTypes::OCCURRENCE_IN_PROGRESS,
             'payload' => ['occurrenceId' => $occurrence->id],
             'status' => EnumCommandStatus::PENDING,
@@ -123,11 +123,11 @@ class OccurrenceCommandFlowIntegrationTest extends TestCase
 
             $this->assertSame(EnumCommandStatus::FAILED, $command->status);
             $this->assertStringContainsString('Erro por quebra de fluxo', (string) $command->error);
-            $this->assertStringContainsString('dispatch ON_SITE', (string) $command->error);
+            $this->assertStringContainsString('veículo no local', (string) $command->error);
         }
     }
 
-    public function test_adding_dispatch_to_cancelled_or_resolved_occurrence_marks_commands_as_failed(): void
+    public function test_adicionar_dispatch_em_ocorrencia_cancelada_ou_resolvida_marca_comando_como_falho(): void
     {
         $cancelledOccurrence = Occurrence::create([
             'external_id' => (string) Str::uuid(),
@@ -145,15 +145,15 @@ class OccurrenceCommandFlowIntegrationTest extends TestCase
             'reported_at' => now(),
         ]);
 
-        $this->assertDispatchAssignmentFails($cancelledOccurrence->id, 'dispatch-cancelled', 'Ocorrência já cancelada');
-        $this->assertDispatchAssignmentFails($resolvedOccurrence->id, 'dispatch-resolved', 'finalizada');
+        $this->assertaFalhaAoAtribuirDispatch($cancelledOccurrence->id, 'dispatch-cancelada', 'Ocorrência já cancelada');
+        $this->assertaFalhaAoAtribuirDispatch($resolvedOccurrence->id, 'dispatch-resolvida', 'finalizada');
     }
 
-    private function handleCommand(EnumCommandTypes $type, array $payload, string $idempotencyKey): Command
+    private function executarComando(EnumCommandTypes $type, array $payload, string $idempotencyKey): Command
     {
         $command = Command::create([
             'idempotency_key' => $idempotencyKey,
-            'source' => 'integration-test',
+            'source' => 'teste-integracao',
             'type' => $type,
             'payload' => $payload,
             'status' => EnumCommandStatus::PENDING,
@@ -164,11 +164,11 @@ class OccurrenceCommandFlowIntegrationTest extends TestCase
         return $command->fresh();
     }
 
-    private function assertDispatchAssignmentFails(string $occurrenceId, string $idempotencyKey, string $messagePart): void
+    private function assertaFalhaAoAtribuirDispatch(string $occurrenceId, string $idempotencyKey, string $trechoMensagem): void
     {
         $command = Command::create([
             'idempotency_key' => $idempotencyKey,
-            'source' => 'integration-test',
+            'source' => 'teste-integracao',
             'type' => EnumCommandTypes::DISPATCH_ASSIGNED,
             'payload' => [
                 'occurrenceId' => $occurrenceId,
@@ -184,8 +184,8 @@ class OccurrenceCommandFlowIntegrationTest extends TestCase
             $command->refresh();
 
             $this->assertSame(EnumCommandStatus::FAILED, $command->status);
-            $this->assertStringContainsString($messagePart, $exception->getMessage());
-            $this->assertStringContainsString($messagePart, (string) $command->error);
+            $this->assertStringContainsString($trechoMensagem, $exception->getMessage());
+            $this->assertStringContainsString($trechoMensagem, (string) $command->error);
         }
     }
 }

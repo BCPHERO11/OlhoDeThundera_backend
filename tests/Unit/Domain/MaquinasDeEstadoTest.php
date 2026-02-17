@@ -9,9 +9,9 @@ use App\Enums\EnumOccurrenceStatus;
 use DomainException;
 use Tests\TestCase;
 
-class StateMachinesTest extends TestCase
+class MaquinasDeEstadoTest extends TestCase
 {
-    public function test_occurrence_state_machine_allows_valid_transition(): void
+    public function test_maquina_de_estados_de_ocorrencia_permite_transicao_valida(): void
     {
         $machine = new OccurrenceStateMachine();
 
@@ -23,7 +23,7 @@ class StateMachinesTest extends TestCase
         $this->assertTrue(true);
     }
 
-    public function test_occurrence_state_machine_blocks_invalid_transition(): void
+    public function test_maquina_de_estados_de_ocorrencia_bloqueia_transicao_invalida(): void
     {
         $machine = new OccurrenceStateMachine();
 
@@ -35,7 +35,7 @@ class StateMachinesTest extends TestCase
         );
     }
 
-    public function test_dispatch_state_machine_allows_valid_transition(): void
+    public function test_maquina_de_estados_de_dispatch_permite_transicao_valida(): void
     {
         $machine = new DispatchStateMachine();
 
@@ -47,7 +47,7 @@ class StateMachinesTest extends TestCase
         $this->assertTrue(true);
     }
 
-    public function test_dispatch_state_machine_blocks_invalid_direct_transition_from_assigned_to_on_site(): void
+    public function test_maquina_de_estados_de_dispatch_bloqueia_transicao_direta_invalida_de_assigned_para_on_site(): void
     {
         $machine = new DispatchStateMachine();
 

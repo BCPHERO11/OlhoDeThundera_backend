@@ -15,7 +15,7 @@ class DispatchRepositoryTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_create_e_find_por_id_e_ocorrencia_funcionam(): void
+    public function test_criacao_e_busca_por_id_e_ocorrencia_funcionam(): void
     {
         $repository = app(DispatchRepository::class);
         $occurrence = $this->criarOcorrencia();
@@ -30,7 +30,7 @@ class DispatchRepositoryTest extends TestCase
         $this->assertNotNull($repository->findByIdAndOccurrenceForUpdate($dispatch->id, $occurrence->id));
     }
 
-    public function test_exists_por_ocorrencia_e_por_status_funcionam(): void
+    public function test_verificacao_de_existencia_por_ocorrencia_e_status_funciona(): void
     {
         $repository = app(DispatchRepository::class);
         $occurrence = $this->criarOcorrencia();
@@ -45,7 +45,7 @@ class DispatchRepositoryTest extends TestCase
         $this->assertTrue($repository->existsByOccurrenceIdAndStatus($occurrence->id, EnumDispatchStatus::ON_SITE));
     }
 
-    public function test_close_all_e_save_atualizam_registros(): void
+    public function test_fechamento_em_lote_e_salvamento_atualizam_registros(): void
     {
         $repository = app(DispatchRepository::class);
         $occurrence = $this->criarOcorrencia();

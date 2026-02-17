@@ -12,7 +12,7 @@ class CommandRepositoryTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_create_cria_comando_pendente(): void
+    public function test_criacao_gera_comando_pendente(): void
     {
         $repository = app(CommandRepository::class);
 
@@ -27,7 +27,7 @@ class CommandRepositoryTest extends TestCase
         $this->assertSame(EnumCommandStatus::PENDING, $command->status);
     }
 
-    public function test_mark_as_processed_atualiza_status_e_data(): void
+    public function test_marcacao_como_processado_atualiza_status_e_data(): void
     {
         $repository = app(CommandRepository::class);
 
@@ -45,7 +45,7 @@ class CommandRepositoryTest extends TestCase
         $this->assertNotNull($command->fresh()->processed_at);
     }
 
-    public function test_mark_as_failed_atualiza_status_erro_e_data(): void
+    public function test_marcacao_como_falho_atualiza_status_erro_e_data(): void
     {
         $repository = app(CommandRepository::class);
 

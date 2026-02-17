@@ -13,11 +13,11 @@ use Illuminate\Support\Str;
 use LogicException;
 use Tests\TestCase;
 
-class ImmutableAttributesTest extends TestCase
+class AtributosImutaveisTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_occurrence_generates_id_and_blocks_id_and_external_id_changes(): void
+    public function test_ocorrencia_gera_id_e_bloqueia_alteracao_de_id_e_external_id(): void
     {
         $occurrence = Occurrence::create([
             'external_id' => (string) Str::uuid(),
@@ -34,7 +34,7 @@ class ImmutableAttributesTest extends TestCase
         $occurrence->save();
     }
 
-    public function test_dispatch_generates_id_and_blocks_id_changes(): void
+    public function test_dispatch_gera_id_e_bloqueia_alteracao_de_id(): void
     {
         $occurrence = Occurrence::create([
             'external_id' => (string) Str::uuid(),
@@ -57,11 +57,11 @@ class ImmutableAttributesTest extends TestCase
         $dispatch->save();
     }
 
-    public function test_command_generates_id_and_blocks_immutable_changes(): void
+    public function test_comando_gera_id_e_bloqueia_alteracoes_imutaveis(): void
     {
         $command = Command::create([
-            'idempotency_key' => 'key-' . Str::uuid(),
-            'source' => 'test',
+            'idempotency_key' => 'chave-' . Str::uuid(),
+            'source' => 'teste',
             'type' => EnumCommandTypes::OCCURRENCE_CREATED,
             'payload' => ['externalId' => (string) Str::uuid()],
             'status' => EnumCommandStatus::PENDING,
@@ -69,12 +69,12 @@ class ImmutableAttributesTest extends TestCase
 
         $this->assertNotNull($command->id);
 
-        $command->idempotency_key = 'new-key';
+        $command->idempotency_key = 'nova-chave';
         $this->expectException(LogicException::class);
         $command->save();
     }
 
-    public function test_audit_log_blocks_entity_binding_changes(): void
+    public function test_audit_log_bloqueia_alteracao_de_vinculo_da_entidade(): void
     {
         $occurrence = Occurrence::create([
             'external_id' => (string) Str::uuid(),
@@ -90,7 +90,7 @@ class ImmutableAttributesTest extends TestCase
             'action' => 'created',
             'before' => null,
             'after' => ['status' => 0],
-            'meta' => ['source' => 'test'],
+            'meta' => ['source' => 'teste'],
             'created_at' => now(),
         ]);
 

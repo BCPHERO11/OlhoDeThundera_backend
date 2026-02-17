@@ -13,7 +13,7 @@ class OccurrenceRepositoryTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_create_persiste_ocorrencia_com_id_gerado(): void
+    public function test_criacao_persiste_ocorrencia_com_id_gerado(): void
     {
         $repository = app(OccurrenceRepository::class);
 
@@ -29,7 +29,7 @@ class OccurrenceRepositoryTest extends TestCase
         $this->assertDatabaseHas('occurrences', ['id' => $occurrence->id]);
     }
 
-    public function test_find_por_external_id_e_por_id_funcionam(): void
+    public function test_busca_por_external_id_e_por_id_funciona(): void
     {
         $repository = app(OccurrenceRepository::class);
         $occurrence = $this->criarOcorrencia('incendio_urbano', EnumOccurrenceStatus::REPORTED);
@@ -45,7 +45,7 @@ class OccurrenceRepositoryTest extends TestCase
         );
     }
 
-    public function test_save_atualiza_status_da_ocorrencia(): void
+    public function test_salvar_atualiza_status_da_ocorrencia(): void
     {
         $repository = app(OccurrenceRepository::class);
         $occurrence = $this->criarOcorrencia('incendio_urbano', EnumOccurrenceStatus::REPORTED);
@@ -56,7 +56,7 @@ class OccurrenceRepositoryTest extends TestCase
         $this->assertSame(EnumOccurrenceStatus::IN_PROGRESS, $salva->status);
     }
 
-    public function test_list_by_filters_aplica_filtros_de_status_e_tipo(): void
+    public function test_listagem_por_filtros_aplica_status_e_tipo(): void
     {
         $repository = app(OccurrenceRepository::class);
 
