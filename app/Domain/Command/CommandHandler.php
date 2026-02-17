@@ -7,6 +7,7 @@ use App\Enums\EnumDispatchStatus;
 use App\Enums\EnumOccurrenceStatus;
 use App\Models\Command;
 use App\Repositories\CommandRepository;
+use App\Repositories\DispatchRepository;
 use App\Services\DispatchService;
 use App\Services\OccurrenceService;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +17,7 @@ class CommandHandler
     public function __construct(
         private OccurrenceService $occurrenceService,
         private DispatchService $dispatchService,
+        private DispatchRepository $dispatchRepository,
         private CommandRepository $commandRepository
     ) {}
 
@@ -32,10 +34,7 @@ class CommandHandler
                     $this->occurrenceService->create($command->payload),
 
                     EnumCommandTypes::OCCURRENCE_IN_PROGRESS =>
-                    $this->occurrenceService->changeStatusById(
-                        $command->payload['occurrenceId'],
-                        EnumOccurrenceStatus::IN_PROGRESS
-                    ),
+                    $this->startOccurrence($command->payload['occurrenceId']),
 
                     EnumCommandTypes::OCCURRENCE_RESOLVED =>
                     $this->resolveOccurrenceAndCloseDispatches(
@@ -71,6 +70,18 @@ class CommandHandler
 
             throw $e;
         }
+    }
+
+    private function startOccurrence(string $occurrenceId): void
+    {
+        if (!$this->dispatchRepository->existsByOccurrenceId($occurrenceId)) {
+            throw new \DomainException('Só é possível iniciar ocorrência após ao menos um veículo no local.');
+        }
+
+        $this->occurrenceService->changeStatusById(
+            $occurrenceId,
+            EnumOccurrenceStatus::IN_PROGRESS
+        );
     }
 
     private function resolveOccurrenceAndCloseDispatches(string $occurrenceId): void
