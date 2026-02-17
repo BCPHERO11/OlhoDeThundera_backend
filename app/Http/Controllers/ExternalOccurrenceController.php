@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreExternalOccurrenceRequest;
+use App\Http\Requests\StoreOccurrenceRequest;
 use App\Jobs\ProcessApiPost;
 use Illuminate\Http\JsonResponse;
 use App\Enums\EnumCommandStatus;
@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 
 class ExternalOccurrenceController extends Controller
 {
-    public function store(StoreExternalOccurrenceRequest $request): JsonResponse
+    public function store(StoreOccurrenceRequest $request): JsonResponse
     {
         $validated = $request->validated();
 

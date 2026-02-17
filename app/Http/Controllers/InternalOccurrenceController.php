@@ -6,7 +6,6 @@ use App\Enums\EnumCommandStatus;
 use App\Enums\EnumCommandTypes;
 use App\Http\Requests\ArrivedOccurrenceRequest;
 use App\Http\Requests\CancelOccurrenceRequest;
-use App\Http\Requests\CreateOccurrenceRequest;
 use App\Http\Requests\DispatchOccurrenceRequest;
 use App\Http\Requests\ResolveOccurrenceRequest;
 use App\Http\Requests\StartOccurrenceRequest;
@@ -17,7 +16,7 @@ use Illuminate\Support\Str;
 
 class InternalOccurrenceController extends Controller
 {
-    public function create(CreateOccurrenceRequest $request): JsonResponse
+    public function store(StartOccurrenceRequest $request): JsonResponse
     {
         $validated = $request->validated();
         $validated['reportedAt'] = now()->toDateTimeString();
