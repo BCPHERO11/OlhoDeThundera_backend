@@ -7,6 +7,7 @@ use App\Enums\EnumDispatchStatus;
 use App\Enums\EnumOccurrenceStatus;
 use App\Models\Command;
 use App\Repositories\CommandRepository;
+use App\Repositories\DispatchRepository;
 use App\Services\DispatchService;
 use App\Services\OccurrenceService;
 use Illuminate\Support\Facades\DB;
@@ -16,13 +17,14 @@ class CommandHandler
     public function __construct(
         private OccurrenceService $occurrenceService,
         private DispatchService $dispatchService,
+        private DispatchRepository $dispatchRepository,
         private CommandRepository $commandRepository
     ) {}
 
     public function handle(Command $command): void
     {
-        DB::transaction(function () use ($command) {
-            try {
+        try {
+            DB::transaction(function () use ($command) {
                 $type = $command->type instanceof EnumCommandTypes
                     ? $command->type
                     : EnumCommandTypes::from($command->type);
@@ -32,10 +34,7 @@ class CommandHandler
                     $this->occurrenceService->create($command->payload),
 
                     EnumCommandTypes::OCCURRENCE_IN_PROGRESS =>
-                    $this->occurrenceService->changeStatusById(
-                        $command->payload['occurrenceId'],
-                        EnumOccurrenceStatus::IN_PROGRESS
-                    ),
+                    $this->startOccurrence($command->payload['occurrenceId']),
 
                     EnumCommandTypes::OCCURRENCE_RESOLVED =>
                     $this->resolveOccurrenceAndCloseDispatches(
@@ -60,17 +59,29 @@ class CommandHandler
                 };
 
                 $this->commandRepository->markAsProcessed($command);
-            } catch (\Throwable $e) {
-                $errorMessage = $e instanceof \DomainException
-                    ? 'Erro por quebra de fluxo: ' . $e->getMessage()
-                    : $e->getMessage();
+            });
+        } catch (\Throwable $e) {
+            $errorMessage = $e instanceof \DomainException
+                ? 'Erro por quebra de fluxo: ' . $e->getMessage()
+                : $e->getMessage();
 
-                $this->commandRepository
-                    ->markAsFailed($command, $errorMessage);
+            $this->commandRepository
+                ->markAsFailed($command, $errorMessage);
 
-                throw $e;
-            }
-        });
+            throw $e;
+        }
+    }
+
+    private function startOccurrence(string $occurrenceId): void
+    {
+        if (!$this->dispatchRepository->existsByOccurrenceId($occurrenceId)) {
+            throw new \DomainException('Só é possível iniciar ocorrência após ao menos um dispatch ON_SITE.');
+        }
+
+        $this->occurrenceService->changeStatusById(
+            $occurrenceId,
+            EnumOccurrenceStatus::IN_PROGRESS
+        );
     }
 
     private function resolveOccurrenceAndCloseDispatches(string $occurrenceId): void
