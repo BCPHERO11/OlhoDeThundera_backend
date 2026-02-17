@@ -16,7 +16,7 @@ Route::middleware(['api', 'api.key', 'api.indempotency'])->group(function () {
     Route::prefix('occurrences')->group(function () {
 
         // Rota que registra ocorrencias // Occurrence = 0 e sem dispatch Command = Occurrence_created
-        Route::post('create', [InternalOccurrenceController::class, 'create']);
+        Route::post('create', [InternalOccurrenceController::class, 'store']);
 
         //TODO verificar as novas rotas criadas
         Route::prefix('{uuid}')->whereUuid('uuid')->group(function () {
