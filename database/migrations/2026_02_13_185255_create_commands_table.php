@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('commands', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('idempotency_key', 191)->unique();
+            $table->string('idempotency_key', 191);
             $table->string('source', 50)->index();
             $table->unsignedSmallInteger('type');
             $table->json('payload');

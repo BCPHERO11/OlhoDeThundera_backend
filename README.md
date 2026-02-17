@@ -113,8 +113,8 @@ Fluxo:
 
 1. Valida autenticação
 2. Valida payload
-3. Persiste registro na tabela `command_inbox` com status `pending`
-4. Enfileira Job
+3. Formata payload dentro de um comando
+4. Enfileira na fila com Redis
 
 Resposta HTTP:
 
@@ -126,12 +126,69 @@ A decisão de usar `202` está alinhada com o significado formal: requisição a
 
 ---
 
+# 🔁 Estratégia de idempotência
+A estratégia de indepotência adotada foi utilizando a verificação através do próprio Redis.
 
-## Estratégia de idempotência
-## Estratégia de concorrência
-## Pontos de falha e recuperação
-## O que ficou de fora
-## Como o sistema poderia evoluir na corporação
+Primeiramente é gerada uma string do tipo
+```
+idempotency_key + tipo do comando + id da ocorrencia
+```
+⚠️ **Obs: caso a ocorrência esteja vindo do sistema terceiro é utilizado o id externo** ⚠️ 
+
+Em seguida é utilizado um comando no redis pra settar uma chave exclusiva no cache pelo próximo minuto.
+```php
+$result = Redis::set($key, now()->toDateTimeString(), 'NX', 'EX', 60 * 60)
+```
+
+Caso a chave já tenha sido cadastrada e esteja em cache ainda o set retornará false o que tira do fluxo e gera um response de 409 com a mensagem de que a solicitação já foi recebida
+
+---
+
+# 🔀 Estratégia de concorrência
+
+O sistema se protege contra:
+
+* Eventos simultâneos
+* Transições inválidas de estado
+
+## Proteção contra eventos simultâneos
+O sistema faz uso de 2 métodos principaos para evitar falahs por eventos simultâneos
+
+* Uso do método BLPOP do Redis ao tirar um comando da fila. Pois ele garante o lock impedindo vários workers fazerem leituras simultâneas.
+* Uso da função Laravel ->lockForUpdate no momento de registro em disco o que também irá garantir previsibilidade em um ambiente com mútiplos workers
+
+## Proteção contra transições inválidas de estado
+Foi feita através da implementação de máquinas de estados para regular todas as transições válidas tanto dos Occurrences quanto dos Dispatches
+
+---
+# 🚫 Pontos de falha e recuperação
+Não foi implementado um método de recuperação de comandos perdidos, então em caso de falhas, qualquer falhas em qualquer etapa do commando o sistema realiza rollback das mudanças feitas e registra o motivo dentro do próprio comando.
+
+---
+# 🚧 O que Ficou de Fora
+
+* Autenticação com OAuth/JWT
+* Sistema de permissões por perfil
+* Observabilidade completa (tracing distribuído)
+* Dashboard operacional avançado
+* Cache para leitura
+
+---
+
+# 🔮 Evolução na Corporação
+
+Possíveis evoluções:
+
+* Integração com sistemas estaduais
+* API pública de consulta
+* Métricas operacionais (SLA, tempo resposta)
+* Georreferenciamento
+* Painel em tempo real
+* Multi-tenancy para batalhões
+* Event streaming (Kafka)
+
+---
+
 
 
 Rodar testes:
@@ -139,99 +196,6 @@ Rodar testes:
 ```bash
 docker compose exec app php artisan test
 ```
-
-#  Estratégia de Integração Externa
-# 🔁 Estratégia de Idempotência
-
-A idempotência é garantida via tabela **Command/Event Inbox**.
-
-Escopo de unicidade:
-
-```
-idempotency_key + type + external_id
-```
-
-## Como funciona:
-
-* Cada requisição externa gera um registro na inbox.
-* Existe constraint única no banco para evitar duplicação.
-* O payload é armazenado integralmente.
-* Um hash/fingerprint do payload é comparado caso a mesma key reapareça.
-
-## Cenários tratados:
-
-| Situação                            | Comportamento           |
-| ----------------------------------- | ----------------------- |
-| Retry com mesma key e mesmo payload | Retorna mesmo commandId |
-| Mesma key com payload diferente     | 422 Unprocessable       |
-| Mesma key em processamento          | 409 Conflict            |
-
-## Armazenamento da chave
-
-* Persistida no banco
-* Retenção indefinida (pode ser evoluído para política de expiração)
-* Serve como trilha auditável
-
----
-
-# 🔒 Estratégia de Concorrência
-
-O sistema se protege contra:
-
-* Eventos simultâneos
-* Transições inválidas de estado
-
-## Medidas adotadas
-
-### 1️⃣ Constraint de unicidade
-
-`external_id` possui índice único no banco.
-
-Isso impede duplicidade sob concorrência real.
-
----
-
-### 2️⃣ Transações com lock por linha
-
-Durante mudança de status:
-
-```sql
-SELECT ... FOR UPDATE
-```
-
-Isso serializa alterações na mesma ocorrência.
-
----
-
-### 3️⃣ Jobs sem sobreposição
-
-Utilização de:
-
-* Middleware `WithoutOverlapping`
-* Locks distribuídos via Redis
-
-Evita que dois workers processem o mesmo agregado simultaneamente.
-
----
-
-### 4️⃣ Máquina de estados
-
-Transições válidas:
-
-Occurrence:
-
-* reported → in_progress
-* in_progress → resolved
-* qualquer → cancelled (exceto resolved)
-
-Dispatch:
-
-* assigned → en_route → on_site → closed
-
-Transições inválidas geram erro e não alteram estado.
-
----
-
 # 📝 Estratégia de Auditoria
 
 Toda mudança de status em:
@@ -313,30 +277,6 @@ docker compose exec app php artisan test
 | Banco indisponível  | Retry com backoff     |
 | Payload inválido    | Status failed + log   |
 | Duplicidade externa | Idempotência          |
-
----
-
-# 🚧 O que Ficou de Fora
-
-* Autenticação com OAuth/JWT
-* Sistema de permissões por perfil
-* Observabilidade completa (tracing distribuído)
-* Dashboard operacional avançado
-* Cache para leitura
-
----
-
-# 🔮 Evolução na Corporação
-
-Possíveis evoluções:
-
-* Integração com sistemas estaduais
-* API pública de consulta
-* Métricas operacionais (SLA, tempo resposta)
-* Georreferenciamento
-* Painel em tempo real
-* Multi-tenancy para batalhões
-* Event streaming (Kafka)
 
 ---
 

@@ -11,13 +11,7 @@ Route::middleware('api')->group(function () {
         Route::post('occurrences', [ExternalOccurrenceController::class, 'store']);
     });
 
-    Route::get('occurrences/{status?}/{type?}', [ViewItensController::class, 'index']);
-
     Route::prefix('occurrences')->group(function () {
-        // Rota que registra ocorrencias // Occurrence = 0 e sem dispatch Command = Occurrence_created
-        Route::post('store', [InternalOccurrenceController::class, 'store']);
-
-        //TODO verificar as novas rotas criadas
         Route::prefix('{uuid}')->whereUuid('uuid')->group(function () {
             // Rota que adiciona despacho Dispatch = 0 e Ocurrence 0 Command = Dispatch_assigned
             Route::post('dispatches', [InternalOccurrenceController::class, 'dispatch']);
@@ -30,5 +24,8 @@ Route::middleware('api')->group(function () {
             // Rota que cancela a ocorrencia Dispatch = 3 e Ocurrence 3 Command = Ocurrence_cancelled
             Route::post('cancel', [InternalOccurrenceController::class, 'cancel']);
         });
+
+     //Route::get('occurrences/{status?}/{type?}', [ViewItensController::class, 'index']);
     });
+
 });

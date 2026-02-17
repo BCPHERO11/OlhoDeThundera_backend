@@ -17,44 +17,6 @@ use Illuminate\Support\Str;
 
 class InternalOccurrenceController extends Controller
 {
-    public function store(StoreOccurrenceRequest $request): JsonResponse
-    {
-        $validated = $request->validated();
-        $validated['reportedAt'] = now()->toDateTimeString();
-
-        $commandPayload = [
-            'id' => (string) Str::uuid(),
-            'idempotency_key' => null,
-            'source' => 'sistema_interno',
-            'type' => EnumCommandTypes::OCCURRENCE_CREATED,
-            'payload' => $validated,
-            'status' => EnumCommandStatus::PENDING,
-            'processed_at' => null,
-            'error' => null,
-        ];
-
-        $key = $request->header('Idempotency-Key')
-            . $commandPayload['type']->name()
-            . $validated['externalId'];
-
-        $commandPayload['idempotency_key'] = $key;
-
-        $result = Redis::set($key, now()->toDateTimeString(), 'NX', 'EX', 60 * 60);
-
-        if (!$result) {
-            return response()->json([
-                'message' => 'Cadastro já solicitado',
-            ], 409);
-        }
-
-        dd($commandPayload);
-        ProcessApiPost::dispatch($commandPayload);
-
-        return response()->json([
-            'message' => 'Ocorrência recebida e colocada na fila',
-        ], 202);
-    }
-
     public function start(StartOccurrenceRequest $request): JsonResponse
     {
         $validated = $request->validated();
@@ -74,8 +36,6 @@ class InternalOccurrenceController extends Controller
         $key = $request->header('Idempotency-Key')
             . $commandPayload['type']->name()
             . $validated['occurrenceId'];
-
-        $commandPayload['idempotency_key'] = $key;
 
         $result = Redis::set($key, now()->toDateTimeString(), 'NX', 'EX', 60 * 60);
 
@@ -112,8 +72,6 @@ class InternalOccurrenceController extends Controller
             . $commandPayload['type']->name()
             . $validated['occurrenceId'];
 
-        $commandPayload['idempotency_key'] = $key;
-
         $result = Redis::set($key, now()->toDateTimeString(), 'NX', 'EX', 60 * 60);
 
         if (!$result) {
@@ -147,16 +105,13 @@ class InternalOccurrenceController extends Controller
 
         $key = $request->header('Idempotency-Key')
             . $commandPayload['type']->name()
-            . $validated['occurrenceId']
-            . $validated['resourceCode'];
-
-        $commandPayload['idempotency_key'] = $key;
+            . $validated['occurrenceId'];
 
         $result = Redis::set($key, now()->toDateTimeString(), 'NX', 'EX', 60 * 60);
 
         if (!$result) {
             return response()->json([
-                'message' => 'Solicitação já recebida para despacho da ocorrência',
+                'message' => 'Solicitação já recebida',
             ], 409);
         }
 
