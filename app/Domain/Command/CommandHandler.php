@@ -75,7 +75,7 @@ class CommandHandler
     private function startOccurrence(string $occurrenceId): void
     {
         if (!$this->dispatchRepository->existsByOccurrenceId($occurrenceId)) {
-            throw new \DomainException('Só é possível iniciar ocorrência após ao menos um dispatch ON_SITE.');
+            throw new \DomainException('Só é possível iniciar ocorrência após ao menos um veículo no local.');
         }
 
         $this->occurrenceService->changeStatusById(
