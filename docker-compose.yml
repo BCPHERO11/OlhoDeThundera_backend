@@ -38,7 +38,6 @@ services:
       CACHE_DRIVER: redis
       CACHE_STORE: redis
 
-
   worker:
     build:
       context: .

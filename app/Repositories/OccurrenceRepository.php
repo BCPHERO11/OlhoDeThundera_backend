@@ -34,16 +34,9 @@ class OccurrenceRepository
 
     public function listByFilters(?string $status, ?string $type): Collection
     {
-        return Occurrence::query()
-            ->when($status !== null, function ($query) use ($status) {
-                $statusEnum = collect(EnumOccurrenceStatus::cases())
-                    ->first(fn (EnumOccurrenceStatus $case) => $case->name() === $status);
-
-                if ($statusEnum) {
-                    $query->where('status', $statusEnum);
-                }
-            })
-            ->when($type !== null, fn ($query) => $query->where('type', $type))
+        return Occurrence::with('dispatches')
+            ->where('status', $status ?? '*')
+            ->where('type', $type ?? '*')
             ->orderByDesc('reported_at')
             ->get();
     }
