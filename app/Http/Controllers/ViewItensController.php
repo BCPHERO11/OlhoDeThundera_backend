@@ -19,8 +19,15 @@ class ViewItensController extends Controller
             $filters['type'] ?? null
         );
 
+        $data = $occurrences->map(function ($occurrence) {
+            $occurrenceData = $occurrence->toArray();
+            $occurrenceData['status'] = $occurrence->status->name();
+
+            return $occurrenceData;
+        });
+
         return response()->json([
-            'data' => $occurrences,
+            'data' => $data,
             'filters' => [
                 'status' => $filters['status'] ?? null,
                 'type' => $filters['type'] ?? null,

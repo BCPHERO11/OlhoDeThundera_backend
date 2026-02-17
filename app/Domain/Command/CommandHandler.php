@@ -21,8 +21,8 @@ class CommandHandler
 
     public function handle(Command $command): void
     {
-        DB::transaction(function () use ($command) {
-            try {
+        try {
+            DB::transaction(function () use ($command) {
                 $type = $command->type instanceof EnumCommandTypes
                     ? $command->type
                     : EnumCommandTypes::from($command->type);
@@ -60,17 +60,17 @@ class CommandHandler
                 };
 
                 $this->commandRepository->markAsProcessed($command);
-            } catch (\Throwable $e) {
-                $errorMessage = $e instanceof \DomainException
-                    ? 'Erro por quebra de fluxo: ' . $e->getMessage()
-                    : $e->getMessage();
+            });
+        } catch (\Throwable $e) {
+            $errorMessage = $e instanceof \DomainException
+                ? 'Erro por quebra de fluxo: ' . $e->getMessage()
+                : $e->getMessage();
 
-                $this->commandRepository
-                    ->markAsFailed($command, $errorMessage);
+            $this->commandRepository
+                ->markAsFailed($command, $errorMessage);
 
-                throw $e;
-            }
-        });
+            throw $e;
+        }
     }
 
     private function resolveOccurrenceAndCloseDispatches(string $occurrenceId): void
