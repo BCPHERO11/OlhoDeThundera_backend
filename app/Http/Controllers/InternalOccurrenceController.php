@@ -24,7 +24,6 @@ class InternalOccurrenceController extends Controller
 
         $commandPayload = [
             'id' => (string) Str::uuid(),
-            'idempotency_key' => null,
             'source' => 'sistema_interno',
             'type' => EnumCommandTypes::OCCURRENCE_IN_PROGRESS,
             'payload' => $validated,
@@ -47,7 +46,7 @@ class InternalOccurrenceController extends Controller
             ], 409);
         }
 
-        ProcessApiPost::dispatch($commandPayload);
+        ProcessApiPost::dispatch($commandPayload, $key);
 
         return response()->json([
             'message' => 'Solicitação de início da ocorrência recebida e colocada na fila',
@@ -61,7 +60,6 @@ class InternalOccurrenceController extends Controller
 
         $commandPayload = [
             'id' => (string) Str::uuid(),
-            'idempotency_key' => null,
             'source' => 'sistema_interno',
             'type' => EnumCommandTypes::OCCURRENCE_RESOLVED,
             'payload' => $validated,
@@ -84,7 +82,7 @@ class InternalOccurrenceController extends Controller
             ], 409);
         }
 
-        ProcessApiPost::dispatch($commandPayload);
+        ProcessApiPost::dispatch($commandPayload, $key);
 
         return response()->json([
             'message' => 'Solicitação de resolução da ocorrência recebida e colocada na fila',
@@ -98,7 +96,6 @@ class InternalOccurrenceController extends Controller
 
         $commandPayload = [
             'id' => (string) Str::uuid(),
-            'idempotency_key' => null,
             'source' => 'sistema_interno',
             'type' => EnumCommandTypes::DISPATCH_ASSIGNED,
             'payload' => $validated,
@@ -121,7 +118,7 @@ class InternalOccurrenceController extends Controller
             ], 409);
         }
 
-        ProcessApiPost::dispatch($commandPayload);
+        ProcessApiPost::dispatch($commandPayload, $key);
 
         return response()->json([
             'message' => 'Solicitação de despacho recebida e colocada na fila',
@@ -135,7 +132,6 @@ class InternalOccurrenceController extends Controller
 
         $commandPayload = [
             'id' => (string) Str::uuid(),
-            'idempotency_key' => null,
             'source' => 'sistema_interno',
             'type' => EnumCommandTypes::DISPATCH_ON_SITE,
             'payload' => $validated,
@@ -149,8 +145,6 @@ class InternalOccurrenceController extends Controller
             . $validated['occurrenceId']
             . $validated['dispatchId'];
 
-        $commandPayload['idempotency_key'] = $key;
-
         $result = Redis::set($key, now()->toDateTimeString(), 'NX', 'EX', 60 * 60);
 
         if (!$result) {
@@ -159,7 +153,7 @@ class InternalOccurrenceController extends Controller
             ], 409);
         }
 
-        ProcessApiPost::dispatch($commandPayload);
+        ProcessApiPost::dispatch($commandPayload, $key);
 
         return response()->json([
             'message' => 'Solicitação de chegada do despacho recebida e colocada na fila',
@@ -173,7 +167,6 @@ class InternalOccurrenceController extends Controller
 
         $commandPayload = [
             'id' => (string) Str::uuid(),
-            'idempotency_key' => null,
             'source' => 'sistema_interno',
             'type' => EnumCommandTypes::OCCURRENCE_CANCELLED,
             'payload' => $validated,
@@ -186,8 +179,6 @@ class InternalOccurrenceController extends Controller
             . $commandPayload['type']->name()
             . $validated['occurrenceId'];
 
-        $commandPayload['idempotency_key'] = $key;
-
         $result = Redis::set($key, now()->toDateTimeString(), 'NX', 'EX', 60 * 60);
 
         if (!$result) {
@@ -196,7 +187,7 @@ class InternalOccurrenceController extends Controller
             ], 409);
         }
 
-        ProcessApiPost::dispatch($commandPayload);
+        ProcessApiPost::dispatch($commandPayload, $key);
 
         return response()->json([
             'message' => 'Solicitação de cancelamento da ocorrência recebida e colocada na fila',

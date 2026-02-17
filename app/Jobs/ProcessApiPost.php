@@ -22,24 +22,22 @@ class ProcessApiPost implements ShouldQueue
     public int $backoff = 10;
 
     public function __construct(
-        public array $payload
+        public array $payload,
+        public string $idempotencyKey
     ) {}
 
     public function handle(
         CommandHandler $handler,
         CommandRepository $commandRepository
     ): void {
-        $idempotencyKey = $this->payload['idempotency_key'] ?? null;
-
-        if (!$idempotencyKey) {
-            throw new \InvalidArgumentException('idempotency_key ausente no payload');
-        }
-
-        $command = Command::where('idempotency_key', $idempotencyKey)
+        $command = Command::where('idempotency_key', $this->idempotencyKey)
             ->first();
 
         if (!$command) {
-            $command = $commandRepository->create($this->payload);
+            $command = $commandRepository->create([
+                ...$this->payload,
+                'idempotency_key' => $this->idempotencyKey,
+            ]);
         }
 
         if ($command->status === EnumCommandStatus::PROCESSED) {
@@ -48,11 +46,10 @@ class ProcessApiPost implements ShouldQueue
 
         try {
             DB::transaction(function () use (
-                $idempotencyKey,
                 $handler,
                 &$command
             ) {
-                $command = Command::where('idempotency_key', $idempotencyKey)
+                $command = Command::where('idempotency_key', $this->idempotencyKey)
                     ->lockForUpdate()
                     ->firstOrFail();
 
@@ -90,13 +87,7 @@ class ProcessApiPost implements ShouldQueue
      */
     public function failed(Throwable $exception): void
     {
-        $idempotencyKey = $this->payload['idempotency_key'] ?? null;
-
-        if (!$idempotencyKey) {
-            return;
-        }
-
-        $command = Command::where('idempotency_key', $idempotencyKey)->first();
+        $command = Command::where('idempotency_key', $this->idempotencyKey)->first();
 
         if ($command) {
             app(CommandRepository::class)

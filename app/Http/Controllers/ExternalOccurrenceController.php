@@ -18,7 +18,6 @@ class ExternalOccurrenceController extends Controller
 
         $commandPayload = [
             'id' => (string) Str::uuid(),
-            'idempotency_key' => null,
             'source' => 'sistema_externo',
             'type' => EnumCommandTypes::OCCURRENCE_CREATED,
             'payload' => $validated,
@@ -31,8 +30,6 @@ class ExternalOccurrenceController extends Controller
             . $commandPayload['type']->name()
             . $validated['externalId'];
 
-        $commandPayload['idempotency_key'] = $key;
-
         $result = Redis::set($key, now()->toDateTimeString(), 'NX', 'EX', 60 * 60);
 
         if (!$result) {
@@ -41,7 +38,7 @@ class ExternalOccurrenceController extends Controller
             ], 409);
         }
 
-        ProcessApiPost::dispatch($commandPayload);
+        ProcessApiPost::dispatch($commandPayload, $key);
 
         return response()->json([
             'message' => 'Ocorrência recebida e colocada na fila'

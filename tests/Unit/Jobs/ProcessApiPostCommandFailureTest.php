@@ -42,7 +42,7 @@ class ProcessApiPostCommandFailureTest extends TestCase
             'error' => null,
         ];
 
-        $job = new ProcessApiPost($payload);
+        $job = new ProcessApiPost($payload, $payload['idempotency_key']);
 
         $this->expectException(DomainException::class);
         $this->expectExceptionMessage('Ocorrência já cancelada');
@@ -80,7 +80,7 @@ class ProcessApiPostCommandFailureTest extends TestCase
             'error' => null,
         ];
 
-        $job = new ProcessApiPost($payload);
+        $job = new ProcessApiPost($payload, $payload['idempotency_key']);
 
         $this->expectException(DomainException::class);
         $this->expectExceptionMessage('Só é possível iniciar ocorrência após ao menos um veículo no local.');
