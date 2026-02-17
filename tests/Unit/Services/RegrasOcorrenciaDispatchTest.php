@@ -15,11 +15,11 @@ use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class OccurrenceDispatchRulesTest extends TestCase
+class RegrasOcorrenciaDispatchTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_occurrence_cannot_be_cancelled_after_dispatch_exists(): void
+    public function test_ocorrencia_nao_pode_ser_cancelada_apos_existir_dispatch(): void
     {
         $occurrence = Occurrence::create([
             'external_id' => '0b5fd65b-5f76-4d59-a3a9-9464186fcd11',
@@ -43,7 +43,7 @@ class OccurrenceDispatchRulesTest extends TestCase
         );
     }
 
-    public function test_occurrence_can_only_start_with_on_site_dispatch(): void
+    public function test_ocorrencia_so_pode_iniciar_com_dispatch_on_site(): void
     {
         $occurrence = Occurrence::create([
             'external_id' => 'f22d9288-4f66-44af-8110-7adf92d963de',
@@ -67,7 +67,7 @@ class OccurrenceDispatchRulesTest extends TestCase
         );
     }
 
-    public function test_resolving_occurrence_closes_all_dispatches(): void
+    public function test_resolver_ocorrencia_fecha_todos_os_dispatches(): void
     {
         $occurrence = Occurrence::create([
             'external_id' => '1eb4ddf0-52ec-48e8-a7dc-7ac1e665d53a',
@@ -90,8 +90,8 @@ class OccurrenceDispatchRulesTest extends TestCase
         ]);
 
         $command = Command::create([
-            'idempotency_key' => 'occurrence-resolved-command',
-            'source' => 'test',
+            'idempotency_key' => 'ocorrencia-resolvida-comando',
+            'source' => 'teste',
             'type' => EnumCommandTypes::OCCURRENCE_RESOLVED,
             'payload' => ['occurrenceId' => $occurrence->id],
             'status' => EnumCommandStatus::PENDING,
