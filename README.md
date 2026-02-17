@@ -35,6 +35,7 @@ docker compose up -d --build
 Isso tanto no repositório de front como de backend irá subir:
 
 * `app` → Laravel (API)
+* `worker` → Worker da fila (`php artisan queue:work`)
 * `db` → PostgreSQL
 * `redis` → Redis
 * `frontend` → React
@@ -56,7 +57,7 @@ Rodar migrations:
 php artisan migrate
 ```
 
-Iniciar o worker:
+Iniciar o worker (opcional, apenas se você **não** estiver usando o serviço `worker` do `docker-compose.yml`):
 
 ```bash
 php artisan queue:work
