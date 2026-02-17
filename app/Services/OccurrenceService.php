@@ -2,7 +2,6 @@
 namespace App\Services;
 
 use App\Domain\StateMachines\OccurrenceStateMachine;
-use App\Enums\EnumDispatchStatus;
 use App\Enums\EnumOccurrenceStatus;
 use App\Repositories\DispatchRepository;
 use App\Repositories\OccurrenceRepository;
@@ -67,10 +66,7 @@ class OccurrenceService
 
         if (
             $newStatus === EnumOccurrenceStatus::IN_PROGRESS
-            && !$this->dispatchRepository->existsByOccurrenceIdAndStatus(
-                $occurrenceId,
-                EnumDispatchStatus::ON_SITE
-            )
+            && !$this->dispatchRepository->existsByOccurrenceId($occurrenceId)
         ) {
             throw new \DomainException('Só é possível iniciar ocorrência após ao menos um dispatch ON_SITE.');
         }
