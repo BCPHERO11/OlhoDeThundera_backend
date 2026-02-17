@@ -70,7 +70,8 @@ class OccurrenceRoutesTest extends TestCase
         Queue::assertPushed(ProcessApiPost::class, function (ProcessApiPost $job) use ($occurrenceId) {
             return $job->payload['type'] === EnumCommandTypes::DISPATCH_ASSIGNED
                 && $job->payload['payload']['occurrenceId'] === $occurrenceId
-                && $job->payload['payload']['resourceCode'] === 'ABT-99';
+                && $job->payload['payload']['resourceCode'] === 'ABT-99'
+                && $job->idempotencyKey === 'dispatch-key-001DISPATCH_ASSIGNED' . $occurrenceId;
         });
     }
 
