@@ -166,8 +166,27 @@ Foi feita através da implementação de máquinas de estados para regular todas
 Não foi implementado um método de recuperação de comandos perdidos, então em caso de falhas, qualquer falhas em qualquer etapa do commando o sistema realiza rollback das mudanças feitas e registra o motivo dentro do próprio comando.
 
 ---
+# 📝 Estratégia de Auditoria
+
+Toda mudança de status em:
+
+* Occurrence
+* Dispatch
+
+Gera registro na tabela `audit_logs` contendo:
+
+* before
+* after
+* command
+* indempotency_key
+
+Isso garante rastreabilidade completa.
+
+---
 # 🚧 O que Ficou de Fora
 
+* A rota de Get acabou tendo algum problema e não funciona
+* O front acabou virando uma página estática devido ao problema de criar rotas get
 * Autenticação com OAuth/JWT
 * Sistema de permissões por perfil
 * Observabilidade completa (tracing distribuído)
@@ -189,124 +208,3 @@ Possíveis evoluções:
 * Event streaming (Kafka)
 
 ---
-
-
-
-Rodar testes:
-
-```bash
-docker compose exec app php artisan test
-```
-# 📝 Estratégia de Auditoria
-
-Toda mudança de status em:
-
-* Occurrence
-* Dispatch
-
-Gera registro na tabela `audit_logs` contendo:
-
-* before
-* after
-* action
-* origem
-* correlation_id
-
-Isso garante rastreabilidade completa.
-
----
-
-# 📊 Observabilidade
-
-Cada comando possui:
-
-* `commandId`
-* `source`
-* `status`
-* `processed_at`
-* `error`
-
-Logs estruturados incluem:
-
-* commandId
-* occurrenceId
-* idempotencyKey
-
-Possível evolução futura: integração com OpenTelemetry.
-
-# 🖥 Frontend
-
-Interface React com:
-
-* Lista de ocorrências
-* Filtro por status e tipo
-* Detalhe da ocorrência
-* Histórico de dispatches
-* Status atual
-
-Fluxo com `202 Accepted`:
-
-1. Ação dispara POST
-2. Recebe `commandId`
-3. UI atualiza para "processando"
-4. Polling atualiza estado após processamento
-
----
-
-# 🧪 Testes Automatizados
-
-Cobertura mínima implementada:
-
-1. ✅ Idempotência da integração
-2. ✅ Transição válida/inválida
-3. ✅ Geração de audit log
-4. ✅ Concorrência simulada
-
-Executar:
-
-```bash
-docker compose exec app php artisan test
-```
-
----
-
-# ⚠️ Pontos de Falha e Recuperação
-
-| Falha               | Mitigação             |
-| ------------------- | --------------------- |
-| Worker cai          | Job permanece na fila |
-| Banco indisponível  | Retry com backoff     |
-| Payload inválido    | Status failed + log   |
-| Duplicidade externa | Idempotência          |
-
----
-
-# 🧠 Decisões Arquiteturais
-
-O sistema foi projetado para:
-
-* Ser resiliente a retries
-* Operar com múltiplos workers
-* Garantir integridade sob concorrência
-* Fornecer trilha auditável completa
-* Permitir escalabilidade horizontal
-
----
-
-# 📌 Conclusão
-
-Esta implementação atende aos requisitos obrigatórios:
-
-* ✔ Processamento assíncrono real
-* ✔ Idempotência forte
-* ✔ Proteção contra concorrência
-* ✔ Auditoria completa
-* ✔ Frontend funcional
-* ✔ Testes automatizados
-* ✔ Ambiente totalmente dockerizado
-
-O projeto foi pensado para refletir desafios reais de sistemas públicos críticos.
-
----
-
-🚒🔥 Obrigado pela oportunidade de participar deste desafio técnico.

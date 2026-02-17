@@ -30,7 +30,7 @@ class ExternalOccurrenceController extends Controller
             . $commandPayload['type']->name()
             . $validated['externalId'];
 
-        $result = Redis::set($key, now()->toDateTimeString(), 'NX', 'EX', 60 * 60);
+        $result = Redis::set($key, now()->toDateTimeString(), 'NX', 'EX',10);
 
         if (!$result) {
             return response()->json([
